@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from yoak.philosophy import blank, graham, jobs
+from yoak.philosophy import blank
 
 _SYSTEM_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "system" / "cofounder.md"
 
@@ -20,18 +20,11 @@ def build_context_prompt(
     journal_summary: str,
     user_message: str,
 ) -> str:
-    """Build the full context block injected alongside the system prompt."""
+    """Build the startup state context injected alongside the system prompt."""
     parts = [
         f"## Current Phase: {blank.PHASE_DESCRIPTIONS.get(phase, phase)}\n",
         canvas_summary,
         journal_summary,
-        "---",
-        "## Relevant Methodology\n",
-        blank.get_phase_guidance(phase),
-        "\n## Relevant Instincts\n",
-        graham.get_relevant_heuristics(user_message),
-        "\n## Relevant Design Principles\n",
-        jobs.get_relevant_principles(user_message),
     ]
     return "\n\n".join(parts)
 

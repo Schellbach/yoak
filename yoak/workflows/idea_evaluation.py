@@ -5,56 +5,50 @@ from yoak.workflows.base import Workflow, WorkflowStep
 
 class IdeaEvaluationWorkflow(Workflow):
     name = "idea_evaluation"
-    description = "Evaluate a startup idea through PG filters, BMC mapping, and risk identification."
+    description = "Evaluate a startup idea through PG filters and BMC mapping."
 
     def __init__(self) -> None:
         self.steps = [
             WorkflowStep(
                 name="Understand the Idea",
                 prompt_supplement=(
-                    "Ask the founder to describe their idea. Get clarity on: "
-                    "What problem does it solve? Who has this problem? How do they solve it today? "
-                    "Why is now the right time? Listen carefully before analyzing."
+                    "The founder is describing a startup idea. "
+                    "Ask ONE clarifying question to understand the core problem they're solving. "
+                    "Don't analyze yet — just listen and ask."
                 ),
             ),
             WorkflowStep(
-                name="Apply PG Filters",
+                name="Who wants this?",
                 prompt_supplement=(
-                    "Apply Paul Graham's idea filters to what the founder described:\n"
-                    "1. The 'well, not field' test: who wants this desperately, enough for a crappy v1?\n"
-                    "2. Schlep blindness check: is this avoided because it's scary/tedious? (positive signal)\n"
-                    "3. Unsexy filter check: does it sound boring? (positive signal)\n"
-                    "4. Organic vs manufactured: does this come from personal experience?\n"
-                    "5. Path out: can this expand from niche to large market?\n"
-                    "Be honest and specific. Cite evidence from the founder's description."
+                    "Now apply the 'well, not field' test: who wants this desperately enough "
+                    "to use a crappy v1? Push the founder to name a specific person, not a market segment. "
+                    "If the idea came from personal experience, note that as a strength. "
+                    "Record what you learn with [CANVAS:customer_segments] and [HYPOTHESIS:*] tags."
                 ),
             ),
             WorkflowStep(
-                name="Map to Business Model Canvas",
+                name="Map what we know",
                 prompt_supplement=(
-                    "Map the idea to the 9 Business Model Canvas blocks. For each block, classify "
-                    "what the founder knows as Fact (validated), Hypothesis (believed but untested), "
-                    "or Unknown (not yet considered). Flag the blocks with the riskiest hypotheses."
+                    "Based on the conversation so far, fill in what we know on the canvas. "
+                    "Use [CANVAS:*] tags for facts and [HYPOTHESIS:*] tags for guesses. "
+                    "Tell the founder which blocks are empty or risky. Keep it brief — "
+                    "just state what's known, what's guessed, and what's unknown."
                 ),
             ),
             WorkflowStep(
-                name="Identify Riskiest Assumption",
+                name="Riskiest assumption",
                 prompt_supplement=(
-                    "Identify the single assumption that, if wrong, kills the entire idea. "
-                    "Then suggest the cheapest, fastest experiment to test it. "
-                    "What evidence would validate it? What evidence would invalidate it?"
+                    "Identify the single riskiest assumption — the one that kills the idea if wrong. "
+                    "Suggest the cheapest experiment to test it. Be specific: who to talk to, "
+                    "what to build, what evidence would validate or kill it. One experiment, not five."
                 ),
             ),
             WorkflowStep(
-                name="Score and Advise",
+                name="Honest take",
                 prompt_supplement=(
-                    "Score the idea on 5 dimensions (1-10 each):\n"
-                    "- Strength of need: How painful is this problem?\n"
-                    "- Founder-market fit: How well does this founder understand the domain?\n"
-                    "- Timing: Why now? Is there a secular trend?\n"
-                    "- Moat potential: Can this build compounding advantages?\n"
-                    "- Path out: Plausible expansion from niche to large market?\n\n"
-                    "Then give concrete next steps. Be direct about weaknesses."
+                    "Give your honest assessment in 3-4 sentences. What's strong, what's weak, "
+                    "and what should the founder do THIS WEEK. Don't score on numbered scales — "
+                    "just be direct. Record any key insight with a [LEARNING] tag."
                 ),
             ),
         ]

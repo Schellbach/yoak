@@ -8,6 +8,7 @@ from typing import AsyncIterator
 import aiosqlite
 
 from yoak.core.config import Settings
+from yoak.core.extractor import Extraction, apply_extractions, parse_response
 from yoak.core.router import route_message
 from yoak.memory.canvas import canvas_summary, get_canvas
 from yoak.memory.journal import get_phase, get_recent_summary
@@ -29,6 +30,7 @@ class Agent:
         self._active_workflow: Workflow | None = None
         self._conversation_id: str = uuid.uuid4().hex[:12]
         self._messages: list[Message] = []
+        self.last_extraction: Extraction | None = None
 
     async def _ensure_db(self) -> aiosqlite.Connection:
         if self._db is None:
@@ -52,7 +54,6 @@ class Agent:
             user_message=user_message,
         )
 
-        # Add workflow supplement if active
         workflow_supplement = ""
         if self._active_workflow and not self._active_workflow.is_complete:
             workflow_supplement = (
@@ -60,7 +61,6 @@ class Agent:
                 + self._active_workflow.get_prompt_supplement()
             )
 
-        # Add skill supplement if routed to one
         skill_supplement = ""
         if not self._active_workflow:
             route_type, route_name = route_message(user_message)
@@ -73,25 +73,33 @@ class Agent:
 
         return [Message(role="system", content=full_system)]
 
+    async def _process_response(self, full_text: str) -> str:
+        """Extract structured tags, write to memory, return clean text for display."""
+        db = await self._ensure_db()
+        extraction = parse_response(full_text)
+        self.last_extraction = extraction
+
+        if extraction.canvas_updates or extraction.hypotheses or extraction.learnings:
+            await apply_extractions(db, extraction)
+
+        return extraction.clean_text
+
     async def chat(self, user_message: str) -> str:
         """Send a message and get a complete response."""
         system_msgs = await self._build_system_messages(user_message)
-
         self._messages.append(Message(role="user", content=user_message))
-
         all_messages = system_msgs + self._messages
 
         result = await complete(all_messages, self.settings)
 
-        self._messages.append(Message(role="assistant", content=result.content))
-        return result.content
+        clean = await self._process_response(result.content)
+        self._messages.append(Message(role="assistant", content=clean))
+        return clean
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[Chunk]:
         """Send a message and stream the response."""
         system_msgs = await self._build_system_messages(user_message)
-
         self._messages.append(Message(role="user", content=user_message))
-
         all_messages = system_msgs + self._messages
 
         accumulator = StreamAccumulator()
@@ -99,10 +107,10 @@ class Agent:
             accumulator.feed(chunk)
             yield chunk
 
-        self._messages.append(Message(role="assistant", content=accumulator.text))
+        clean = await self._process_response(accumulator.text)
+        self._messages.append(Message(role="assistant", content=clean))
 
     def start_workflow(self, workflow_name: str) -> bool:
-        """Start a named workflow."""
         wf = create_workflow(workflow_name)
         if wf:
             self._active_workflow = wf
@@ -110,7 +118,6 @@ class Agent:
         return False
 
     def advance_workflow(self) -> str | None:
-        """Advance to the next step of the active workflow."""
         if self._active_workflow and not self._active_workflow.is_complete:
             self._active_workflow.advance()
             if self._active_workflow.is_complete:
@@ -139,7 +146,6 @@ class Agent:
         self._conversation_id = uuid.uuid4().hex[:12]
 
     async def auto_route(self, user_message: str) -> str | None:
-        """Detect intent and optionally start a workflow. Returns the workflow name if started."""
         if self._active_workflow:
             return None
         route_type, route_name = route_message(user_message)

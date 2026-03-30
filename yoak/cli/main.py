@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import sys
 
 import typer
 from rich.console import Console
@@ -266,7 +265,6 @@ async def _chat_loop():
     from yoak.core.agent import Agent
     from yoak.memory.canvas import get_canvas
     from yoak.memory.journal import list_entries
-    from yoak.models.streaming import StreamAccumulator
 
     settings = load_settings()
     if not _check_model_ready(settings):
@@ -326,32 +324,34 @@ async def _chat_loop():
                     f"{wf['step_name']}[/dim]"
                 )
 
-            console.print("[bold blue]Yoak:[/bold blue] ", end="")
-            acc = StreamAccumulator()
             try:
-                async for chunk in agent.chat_stream(user_input):
-                    acc.feed(chunk)
-                    sys.stdout.write(chunk.delta)
-                    sys.stdout.flush()
+                result = await agent.chat(user_input)
+                console.print(f"[bold blue]Yoak:[/bold blue] {result}")
             except Exception as e:
                 err = str(e)
                 if "AuthenticationError" in err or "API Key" in err:
-                    console.print("\n[red]Authentication failed — check your API key.[/red]")
+                    console.print("[red]Authentication failed — check your API key.[/red]")
                     agent._messages = agent._messages[:-1]
                     continue
                 if "Connection" in err or "ConnectError" in err:
-                    console.print("\n[red]Cannot reach model. Is Ollama running? (ollama serve)[/red]")
+                    console.print("[red]Cannot reach model. Is Ollama running? (ollama serve)[/red]")
                     agent._messages = agent._messages[:-1]
                     continue
-                console.print(f"\n[red]Error: {e}[/red]")
-                try:
-                    agent._messages = agent._messages[:-1]
-                    result = await agent.chat(user_input)
-                    console.print(Markdown(result))
-                except Exception as e2:
-                    console.print(f"[red]{e2}[/red]")
+                console.print(f"[red]Error: {e}[/red]")
+                agent._messages = agent._messages[:-1]
                 continue
-            print()
+
+            # Show what was saved to memory
+            ext = agent.last_extraction
+            if ext and (ext.canvas_updates or ext.hypotheses or ext.learnings):
+                parts = []
+                for block_id, _ in ext.canvas_updates:
+                    parts.append(f"canvas:{block_id.replace('_', ' ')}")
+                for block_id, _ in ext.hypotheses:
+                    parts.append("hypothesis added")
+                for title, _ in ext.learnings:
+                    parts.append(f"learned: {title}")
+                console.print(f"  [dim]saved → {', '.join(parts)}[/dim]")
     finally:
         await agent.close()
 

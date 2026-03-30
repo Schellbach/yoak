@@ -5,69 +5,49 @@ from yoak.workflows.base import Workflow, WorkflowStep
 
 class CustomerDiscoveryWorkflow(Workflow):
     name = "customer_discovery"
-    description = "Guide through Customer Discovery: hypothesis review, interview design, synthesis, solution testing."
+    description = "Validate that a real, painful problem exists for a specific customer."
 
     def __init__(self) -> None:
         self.steps = [
             WorkflowStep(
-                name="Hypothesis Review",
+                name="What's the riskiest hypothesis?",
                 prompt_supplement=(
-                    "Review the Business Model Canvas with the founder. For each block:\n"
-                    "- What's been validated by evidence?\n"
-                    "- What's still a hypothesis?\n"
-                    "- What's completely unknown?\n"
-                    "Identify the riskiest untested assumption — this is what we test next."
+                    "Look at the current canvas. What's the riskiest untested hypothesis? "
+                    "If the canvas is empty, ask the founder who their customer is and what "
+                    "problem they're solving. One question only."
                 ),
-                exit_criteria=["Riskiest hypothesis identified"],
             ),
             WorkflowStep(
-                name="Interview Planning",
+                name="Plan interviews",
                 prompt_supplement=(
-                    "Help design customer interviews to test the riskiest hypothesis:\n"
-                    "- Who should they interview? (specific segment, job title, context)\n"
-                    "- What questions should they ask? (use Blank problem interview protocol)\n"
-                    "- What would constitute validation vs. invalidation? (define BEFORE interviewing)\n"
-                    "- Target: minimum 15-20 problem interviews before conclusions.\n"
-                    "Generate a concrete interview script."
+                    "Help plan the next customer interview. Ask: who specifically should they "
+                    "talk to this week? Help them write ONE opening question — not a full script. "
+                    "The goal is to get them out of the building, not to prepare a perfect plan."
                 ),
-                exit_criteria=["Interview script created", "Target interviewees defined"],
             ),
             WorkflowStep(
-                name="Interview Debrief",
+                name="What did you hear?",
                 prompt_supplement=(
-                    "Help synthesize interview findings:\n"
-                    "- What patterns emerged across 3+ interviews?\n"
-                    "- What surprised the founder? What contradicted assumptions?\n"
-                    "- Capture the most compelling verbatim customer quotes.\n"
-                    "- Update the Business Model Canvas based on evidence.\n"
-                    "- Did a different, more painful problem emerge?"
+                    "The founder should have talked to someone by now. Ask what they heard. "
+                    "Listen for: did the customer recognize the problem? How do they solve it today? "
+                    "Record any insight with [LEARNING] and update the canvas with [CANVAS:*] or [HYPOTHESIS:*]."
                 ),
-                exit_criteria=["Canvas updated with interview evidence"],
             ),
             WorkflowStep(
-                name="Solution Testing",
+                name="Pattern check",
                 prompt_supplement=(
-                    "The problem has been validated. Now help design a low-fidelity MVP:\n"
-                    "- Which MVP type fits? (concierge, landing page, wizard of oz, etc.)\n"
-                    "- Define success criteria BEFORE showing it to anyone.\n"
-                    "- Plan the solution test: who will see it, how, when.\n"
-                    "Apply Jobs's quality lens: even a low-fi MVP should nail the core experience."
+                    "Ask if they're seeing a pattern across conversations. Does the problem feel "
+                    "real and painful, or lukewarm? Be honest about what the evidence says. "
+                    "If it's weak, suggest a different customer segment or problem to test."
                 ),
-                exit_criteria=["MVP type selected", "Success criteria defined"],
             ),
             WorkflowStep(
-                name="Phase Gate",
+                name="Ready to move on?",
                 prompt_supplement=(
-                    "Evaluate whether to advance to Customer Validation. Check:\n"
-                    "- [ ] Customer segment identified and confirmed\n"
-                    "- [ ] Problem validated as genuinely painful\n"
-                    "- [ ] Evidence of willingness to pay\n"
-                    "- [ ] Value proposition in customer's own language\n"
-                    "- [ ] At least one MVP tested with real customers\n\n"
-                    "If not all boxes checked: recommend iteration or pivot.\n"
-                    "If yes: congratulate and prepare to advance to Validation."
+                    "Check: do we have evidence that the problem exists and someone would pay to solve it? "
+                    "If yes, suggest moving to validation. If not, suggest what to test next. "
+                    "Record the decision with [LEARNING]."
                 ),
-                exit_criteria=["Phase gate decision made"],
             ),
         ]
         super().__init__()

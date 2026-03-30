@@ -5,52 +5,33 @@ from yoak.workflows.base import Workflow, WorkflowStep
 
 class ProductCritiqueWorkflow(Workflow):
     name = "product_critique"
-    description = "Review a product through Steve Jobs's design philosophy."
+    description = "Review a product through the lens of simplicity, focus, and craft."
 
     def __init__(self) -> None:
         self.steps = [
             WorkflowStep(
-                name="Experience-First Review",
+                name="What's the experience?",
                 prompt_supplement=(
-                    "Before examining features or technical details:\n"
-                    "1. Ask the founder to describe the ideal customer experience in plain language, "
-                    "without mentioning technology.\n"
-                    "2. Then describe what the actual product delivers.\n"
-                    "3. Where does reality fall short of the ideal? Those gaps are the priorities."
+                    "Ask the founder to describe the ideal customer experience in plain language — "
+                    "no technology, no features. Just: what happens for the customer? "
+                    "Then ask where reality falls short."
                 ),
             ),
             WorkflowStep(
-                name="Simplicity Audit",
+                name="What would you cut?",
                 prompt_supplement=(
-                    "Evaluate simplicity:\n"
-                    "- Can a new user understand the core value within 30 seconds?\n"
-                    "- How many steps from first touch to first value?\n"
-                    "- What could be removed without losing the core experience?\n"
-                    "- Is any element present from inertia rather than intent?\n"
-                    "Remember: 'If you're not embarrassed by v1, you launched too late' — "
-                    "but the core experience must still be extraordinary."
+                    "Ask: what could you remove and still deliver the core value? "
+                    "Push hard here. Most products have too much, not too little. "
+                    "The goal is to find the one thing it does brilliantly."
                 ),
             ),
             WorkflowStep(
-                name="Focus & Quality Audit",
+                name="Honest critique",
                 prompt_supplement=(
-                    "Evaluate focus and quality:\n"
-                    "Focus: What is the ONE thing this does brilliantly? Does every feature serve it?\n"
-                    "Quality: Is attention to detail consistent throughout? Check error states, "
-                    "empty states, loading states, edge cases.\n"
-                    "Does the product feel inevitable — like this is obviously how it should work?"
-                ),
-            ),
-            WorkflowStep(
-                name="Verdict & Recommendations",
-                prompt_supplement=(
-                    "Score each dimension (1-10):\n"
-                    "- Simplicity: How effortless is the core experience?\n"
-                    "- Focus: How clearly does this serve one purpose brilliantly?\n"
-                    "- Craft: How consistent is the quality throughout?\n"
-                    "- Empathy: How deeply does this understand the customer?\n"
-                    "- Delight: Does anything surprise or delight?\n\n"
-                    "Then provide specific, actionable recommendations ordered by impact."
+                    "Give your honest take on the product in 3-4 sentences. "
+                    "What's the one thing that should improve first? "
+                    "Apply Jobs's test: does it feel inevitable, like obviously how it should work? "
+                    "Record any key insight with [LEARNING]."
                 ),
             ),
         ]
