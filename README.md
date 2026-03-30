@@ -20,36 +20,37 @@ The result is an AI cofounder that asks the questions you're avoiding, challenge
 
 ## Quick Start
 
+Copy and paste this into your terminal:
+
 ```bash
-git clone https://github.com/Schellbach/yoak.git
-cd yoak
-./yoak.sh
+git clone https://github.com/Schellbach/yoak.git && cd yoak && make
 ```
 
-That's it. The `./yoak.sh` script handles everything — Python venv, dependencies, Ollama install, and drops you into a conversation with your cofounder. No API key needed. First run takes a minute; every run after is instant.
+That's it — one line. It clones the repo, installs everything, and drops you into a conversation with your AI cofounder. No API key needed. First run takes about a minute; every run after is instant.
 
 ### Want to use a frontier model?
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, GEMINI_API_KEY
-./yoak.sh init                          # picks up the key, lets you switch
+make init                               # picks up the key, lets you switch
 ```
 
 ### Commands
 
 ```bash
-./yoak.sh              # setup (first run) → chat
-./yoak.sh chat         # go straight to chat
-./yoak.sh serve        # start the web dashboard at http://127.0.0.1:8420
-./yoak.sh canvas       # print your Business Model Canvas
-./yoak.sh journal      # show your learning journal
-./yoak.sh init         # reconfigure model, project name, etc.
+make                   # start chatting (installs everything on first run)
+make chat              # go straight to chat
+make serve             # start the web dashboard at http://127.0.0.1:8420
+make canvas            # print your Business Model Canvas
+make journal           # show your learning journal
+make init              # reconfigure model, project name, etc.
+make help              # show all commands
 ```
 
 ### Prerequisites
 
-- Python 3.10+ (the script finds the right version for you)
-- That's it. Ollama is offered during first-run setup. No accounts, no keys.
+- Python 3.10+
+- That's it. Ollama (free local AI) is offered during first-run setup. No accounts, no API keys.
 
 ## Architecture
 
