@@ -32,20 +32,24 @@ That's it — one line. It clones the repo, installs everything, and drops you i
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, GEMINI_API_KEY
-make init                               # picks up the key, lets you switch
+make setup                              # picks up the key, lets you switch
 ```
 
 ### Commands
 
 ```bash
-make                   # start chatting (installs everything on first run)
-make chat              # go straight to chat
-make serve             # start the web dashboard at http://127.0.0.1:8420
-make canvas            # print your Business Model Canvas
-make journal           # show your learning journal
-make init              # reconfigure model, project name, etc.
-make help              # show all commands
+make              # terminal chat (installs deps on first run)
+make ui           # web dashboard + API — open http://127.0.0.1:8420
+make talk         # terminal chat (same as make)
+make setup        # project name, model, paths
+make notes        # learning journal
+make bmc          # Business Model Canvas
+make help         # all targets + aliases
+
+# Same thing, older names: chat=talk, serve=ui, init=setup, journal=notes, canvas=bmc
 ```
+
+The first time you run `make ui`, Yoak builds the dashboard with npm (Node.js required once). After that it is automatic unless you change dashboard source files.
 
 ### Prerequisites
 
@@ -164,10 +168,11 @@ A dark-mode "war room" at `http://127.0.0.1:8420` with five views:
 ### CLI
 
 ```
-yoak chat      — Interactive terminal chat with the cofounder agent
-yoak serve     — Start the API server + dashboard
-yoak canvas    — Display the current Business Model Canvas
-yoak journal   — Show recent learning journal entries
+yoak talk      — Terminal chat with the cofounder (yoak chat is an alias)
+yoak ui        — API + web dashboard at http://127.0.0.1:8420 (yoak serve is an alias)
+yoak bmc       — Print the Business Model Canvas (yoak canvas is an alias)
+yoak notes     — Learning journal (yoak journal is an alias)
+yoak setup     — Configure project and model (yoak init is an alias)
 yoak config    — Manage configuration (show, set)
 ```
 
@@ -175,7 +180,7 @@ In chat mode, slash commands are available: `/workflow`, `/advance`, `/canvas`, 
 
 ## Model Support
 
-Yoak defaults to **Ollama** (free, local, private — no API key needed). To upgrade to a frontier model, just set an API key and run `yoak init`.
+Yoak defaults to **Ollama** (free, local, private — no API key needed). To upgrade to a frontier model, set an API key and run `yoak setup` (or `make setup`).
 
 | Provider | Model String | Setup |
 |----------|-------------|-------|
@@ -185,7 +190,7 @@ Yoak defaults to **Ollama** (free, local, private — no API key needed). To upg
 | Google | `gemini/gemini-2.5-pro` | `export GEMINI_API_KEY=...` |
 | Mistral | `mistral/mistral-large-latest` | `export MISTRAL_API_KEY=...` |
 
-Any model supported by [LiteLLM](https://docs.litellm.ai/docs/providers) works. Run `yoak init` to switch models at any time.
+Any model supported by [LiteLLM](https://docs.litellm.ai/docs/providers) works. Run `yoak setup` to switch models at any time.
 
 ## Project Structure
 

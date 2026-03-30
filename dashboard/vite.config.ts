@@ -12,9 +12,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://127.0.0.1:8420",
-      "/ws": {
-        target: "ws://127.0.0.1:8420",
+      "/api": {
+        target: "http://127.0.0.1:8420",
+        changeOrigin: true,
         ws: true,
       },
     },

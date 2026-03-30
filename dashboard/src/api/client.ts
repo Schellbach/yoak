@@ -74,7 +74,7 @@ export function connectChat(
   onWorkflowStarted?: (name: string) => void
 ): { send: (message: string) => void; close: () => void } {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const ws = new WebSocket(`${protocol}//${window.location.host}/ws/chat`);
+  const ws = new WebSocket(`${protocol}//${window.location.host}/api/ws/chat`);
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);

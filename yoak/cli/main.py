@@ -78,7 +78,7 @@ def _check_model_ready(settings) -> bool:
                     "Then pull a model:\n"
                     "  [green]ollama pull llama3.1[/green]\n\n"
                     "Or switch to a cloud model:\n"
-                    "  [green]yoak init[/green]",
+                    "  [green]yoak setup[/green]",
                     title="Ollama Not Found",
                     border_style="yellow",
                 )
@@ -97,7 +97,7 @@ def _check_model_ready(settings) -> bool:
                 f"Fix it:\n"
                 f"  [green]export {env_var}=\"your-key-here\"[/green]\n\n"
                 f"Or switch to free local models:\n"
-                f"  [green]yoak init[/green]",
+                f"  [green]yoak setup[/green]",
                 title="Configuration Error",
                 border_style="red",
             )
@@ -114,20 +114,16 @@ def _needs_init() -> bool:
 
 @app.callback(invoke_without_command=True)
 def default(ctx: typer.Context):
-    """Run init on first use, then drop into chat."""
+    """First-time setup if needed, then terminal chat."""
     if ctx.invoked_subcommand is not None:
         return
-    if _needs_init():
-        init()
-    else:
-        chat()
+    _start_terminal_chat()
 
 
-# ── Init ──────────────────────────────────────────────────────────────
+# ── Setup / init ───────────────────────────────────────────────────────
 
-@app.command()
-def init():
-    """Set up Yoak for the first time (or reconfigure)."""
+def _run_setup():
+    """Interactive configuration (project name, model)."""
     console.print(
         Panel(
             "[bold]Welcome to Yoak[/bold] — Your AI Cofounder\n\n"
@@ -170,7 +166,7 @@ def init():
             "    [green]1.[/green] Install Ollama:  [cyan]brew install ollama[/cyan]  (or https://ollama.ai)\n"
             "    [green]2.[/green] Start it:         [cyan]ollama serve[/cyan]\n"
             "    [green]3.[/green] Pull a model:     [cyan]ollama pull llama3.1[/cyan]\n"
-            "    [green]4.[/green] Run this again:   [cyan]yoak init[/cyan]\n\n"
+            "    [green]4.[/green] Run this again:   [cyan]yoak setup[/cyan]\n\n"
             "  Or set a cloud API key and pick a provider:"
         )
         model = _ask_model_choice(has_ollama=False)
@@ -215,10 +211,22 @@ def init():
             f"Project: [cyan]{project}[/cyan]\n"
             f"Model:   [cyan]{display_model}[/cyan]\n"
             f"Config:  [dim]{CONFIG_PATH}[/dim]\n\n"
-            f"Run [green]yoak[/green] to start chatting with your cofounder.",
+            f"Run [green]yoak[/green] or [green]make talk[/green] to start chatting.",
             border_style="green",
         )
     )
+
+
+@app.command("setup")
+def setup():
+    """Configure project name and AI model (first run or any time)."""
+    _run_setup()
+
+
+@app.command("init")
+def init():
+    """Same as yoak setup (kept for older tutorials)."""
+    _run_setup()
 
 
 def _get_ollama_models() -> list[str]:
@@ -251,14 +259,24 @@ def _ask_model_choice(has_ollama: bool = False) -> str | None:
     }.get(choice, None)
 
 
-# ── Chat ──────────────────────────────────────────────────────────────
+# ── Terminal chat ─────────────────────────────────────────────────────
 
-@app.command()
-def chat():
-    """Start an interactive chat session with your AI cofounder."""
+def _start_terminal_chat():
     if _needs_init():
-        init()
+        _run_setup()
     asyncio.run(_chat_loop())
+
+
+@app.command("talk")
+def talk():
+    """Chat with your cofounder in the terminal."""
+    _start_terminal_chat()
+
+
+@app.command("chat")
+def chat():
+    """Same as yoak talk."""
+    _start_terminal_chat()
 
 
 async def _chat_loop():
@@ -407,7 +425,7 @@ async def _handle_command(cmd: str, agent):
     elif command == "/model":
         console.print(
             f"Current: [cyan]{agent.settings.model.model}[/cyan]\n"
-            f"Run [green]yoak init[/green] to change."
+            f"Run [green]yoak setup[/green] to change."
         )
     else:
         console.print(f"[dim]Unknown command: {command}[/dim]")
@@ -456,41 +474,64 @@ def config_set(key: str, value: str):
         console.print(f"[red]Error: {e}[/red]")
 
 
-# ── Serve ─────────────────────────────────────────────────────────────
+# ── Web dashboard ─────────────────────────────────────────────────────
 
-@app.command()
-def serve(
-    host: str = typer.Option("127.0.0.1", help="Server host"),
-    port: int = typer.Option(8420, help="Server port"),
-):
-    """Start the Yoak API server and dashboard."""
+def _run_ui(host: str, port: int) -> None:
     import uvicorn
 
     from yoak.api.app import create_app
+    from yoak.api.dashboard_build import ensure_dashboard_built
 
     if _needs_init():
-        init()
+        _run_setup()
 
     settings = load_settings()
     if not _check_model_ready(settings):
         raise typer.Exit(1)
 
+    ensure_dashboard_built(log=console.print)
+
+    url = f"http://{host}:{port}"
     console.print(
         Panel(
-            f"[bold]Yoak Server[/bold] — {settings.project_name}\n"
-            f"API:       http://{host}:{port}/docs\n"
-            f"Dashboard: http://{host}:{port}",
+            f"[bold]Yoak web app[/bold] — {settings.project_name}\n\n"
+            f"Dashboard: [bold cyan]{url}[/bold cyan]\n"
+            f"API docs:  [dim]{url}/docs[/dim]",
             border_style="blue",
         )
     )
     uvicorn.run(create_app(), host=host, port=port)
 
 
-# ── Canvas ────────────────────────────────────────────────────────────
+@app.command("ui")
+def ui(
+    host: str = typer.Option("127.0.0.1", help="Bind address"),
+    port: int = typer.Option(8420, help="HTTP port"),
+):
+    """Start the API and web dashboard — open the printed URL in your browser."""
+    _run_ui(host, port)
 
-@app.command()
+
+@app.command("serve")
+def serve(
+    host: str = typer.Option("127.0.0.1", help="Bind address"),
+    port: int = typer.Option(8420, help="HTTP port"),
+):
+    """Same as yoak ui."""
+    _run_ui(host, port)
+
+
+# ── Canvas (BMC) ──────────────────────────────────────────────────────
+
+@app.command("bmc")
+def bmc():
+    """Print the Business Model Canvas."""
+    asyncio.run(_show_canvas())
+
+
+@app.command("canvas")
 def canvas():
-    """Display the current Business Model Canvas."""
+    """Same as yoak bmc."""
     asyncio.run(_show_canvas())
 
 
@@ -505,11 +546,17 @@ async def _show_canvas():
     await db.close()
 
 
-# ── Journal ───────────────────────────────────────────────────────────
+# ── Learning journal ──────────────────────────────────────────────────
 
-@app.command()
-def journal(entry_type: str = typer.Option(None, help="Filter by type"), limit: int = 20):
+@app.command("notes")
+def notes(entry_type: str = typer.Option(None, help="Filter by type"), limit: int = 20):
     """Show recent learning journal entries."""
+    asyncio.run(_show_journal(entry_type, limit))
+
+
+@app.command("journal")
+def journal_alias(entry_type: str = typer.Option(None, help="Filter by type"), limit: int = 20):
+    """Same as yoak notes."""
     asyncio.run(_show_journal(entry_type, limit))
 
 
