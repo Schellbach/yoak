@@ -1,4 +1,4 @@
-# Yoak — Lean Startup Cofounder Agent
+# Yoak — Agentic Cofounder
 
 An AI cofounder harness that thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs.
 
