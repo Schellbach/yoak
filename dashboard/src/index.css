@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #030712;
+    --color-surface: #111827;
+    --color-border: #1f2937;
+  }
+  body {
+    @apply bg-gray-950 text-gray-100 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-gray-800 bg-gray-900 p-4;
+  }
+  .btn-primary {
+    @apply rounded-lg bg-yoak-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-yoak-500 disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-800 hover:text-gray-200;
+  }
+  .input {
+    @apply rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-yoak-500 focus:ring-1 focus:ring-yoak-500;
+  }
+}
+
+.prose {
+  @apply text-gray-300 leading-relaxed;
+}
+.prose h1, .prose h2, .prose h3 {
+  @apply text-gray-100 font-semibold;
+}
+.prose strong {
+  @apply text-gray-100;
+}
+.prose code {
+  @apply rounded bg-gray-800 px-1.5 py-0.5 text-sm text-yoak-300;
+}
+.prose ul, .prose ol {
+  @apply pl-5;
+}
+.prose li {
+  @apply mb-1;
+}

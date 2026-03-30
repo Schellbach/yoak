@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yoak"
+version = "0.1.0"
+description = "Lean Startup Cofounder Agent — AI harness encoding Paul Graham, Steve Blank, and Steve Jobs philosophies"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "websockets>=14.0",
+    "litellm>=1.55",
+    "aiosqlite>=0.20",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "typer[all]>=0.15",
+    "rich>=13.9",
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+    "httpx>=0.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
+[project.scripts]
+yoak = "yoak.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["yoak"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
