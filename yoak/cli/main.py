@@ -20,6 +20,43 @@ app = typer.Typer(
 )
 console = Console()
 
+_API_KEY_ENV_VARS = {
+    "anthropic": "ANTHROPIC_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "google": "GEMINI_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+}
+
+
+def _check_model_config(settings) -> bool:
+    """Verify a model provider is configured and reachable. Returns True if ok."""
+    import os
+
+    if settings.ollama.enabled:
+        return True
+
+    model = settings.model.model
+    provider = model.split("/")[0] if "/" in model else model
+
+    env_var = _API_KEY_ENV_VARS.get(provider)
+    if env_var and not os.environ.get(env_var):
+        console.print(
+            Panel(
+                f"[red bold]No API key found[/red bold]\n\n"
+                f"Model is set to [cyan]{model}[/cyan] but [cyan]{env_var}[/cyan] is not set.\n\n"
+                f"Fix it with one of:\n"
+                f"  [green]export {env_var}=\"your-key-here\"[/green]\n\n"
+                f"Or switch to a local model:\n"
+                f"  [green]yoak config set ollama.enabled true[/green]\n"
+                f"  [green]yoak config set ollama.model llama3.1[/green]",
+                title="Configuration Error",
+                border_style="red",
+            )
+        )
+        return False
+    return True
+
 
 # ── Chat ──────────────────────────────────────────────────────────────
 
@@ -34,6 +71,10 @@ async def _chat_loop():
     from yoak.models.streaming import StreamAccumulator
 
     settings = load_settings()
+
+    if not _check_model_config(settings):
+        return
+
     agent = Agent(settings)
 
     console.print(
@@ -77,6 +118,11 @@ async def _chat_loop():
                     sys.stdout.flush()
                 full_text = acc.text
             except Exception as e:
+                err_str = str(e)
+                if "AuthenticationError" in err_str or "API Key" in err_str:
+                    console.print("\n[red]Authentication failed. Check your API key.[/red]")
+                    agent._messages = agent._messages[:-1]
+                    continue
                 console.print(f"\n[red]Error: {e}[/red]")
                 console.print("[dim]Falling back to non-streaming...[/dim]")
                 try:
@@ -84,7 +130,10 @@ async def _chat_loop():
                     full_text = await agent.chat(user_input)
                     console.print(Markdown(full_text))
                 except Exception as e2:
-                    console.print(f"[red]Error: {e2}[/red]")
+                    if "AuthenticationError" in str(e2) or "API Key" in str(e2):
+                        console.print("[red]Authentication failed. Check your API key.[/red]")
+                    else:
+                        console.print(f"[red]Error: {e2}[/red]")
                     continue
             print()
     finally:
@@ -203,6 +252,10 @@ def serve(
     import uvicorn
 
     from yoak.api.app import create_app
+
+    settings = load_settings()
+    if not _check_model_config(settings):
+        raise typer.Exit(1)
 
     console.print(
         Panel(
