@@ -54,11 +54,11 @@ def detect_topic_intent(message: str) -> str:
         return "product_critique"
     if any(w in msg for w in ("market", "tam", "sam", "competitors", "landscape")):
         return "market_analysis"
-    if any(w in msg for w in ("growth", "scale", "viral", "acquisition")):
+    if any(w in msg for w in ("competition", "moat", "competitor", "differentiat")):
+        return "competitive_intel"
+    if any(w in msg for w in ("growth", "scale", "viral", "acquisition", "grow faster", "traction")):
         return "growth_strategy"
     if any(w in msg for w in ("economics", "cac", "ltv", "burn", "runway", "unit")):
         return "unit_economics"
-    if any(w in msg for w in ("competition", "moat", "competitor", "differentiat")):
-        return "competitive_intel"
 
     return "general"
