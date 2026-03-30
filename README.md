@@ -23,36 +23,33 @@ The result is an AI cofounder that asks the questions you're avoiding, challenge
 ```bash
 git clone https://github.com/Schellbach/yoak.git
 cd yoak
-./setup.sh
-source .venv/bin/activate
-yoak
+./yoak.sh
 ```
 
-That's it. No API key required. Yoak defaults to [Ollama](https://ollama.ai) for free, local, private AI. On first run it auto-detects what you have available and walks you through a 30-second setup.
+That's it. The `./yoak.sh` script handles everything — Python venv, dependencies, Ollama install, and drops you into a conversation with your cofounder. No API key needed. First run takes a minute; every run after is instant.
 
-### Want to use a frontier model instead?
+### Want to use a frontier model?
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, GEMINI_API_KEY
-yoak init                               # picks up the key, lets you switch
+./yoak.sh init                          # picks up the key, lets you switch
 ```
 
 ### Commands
 
 ```bash
-yoak           # interactive setup (first run) → chat
-yoak chat      # go straight to chat
-yoak serve     # start the web dashboard at http://127.0.0.1:8420
-yoak canvas    # print your Business Model Canvas
-yoak journal   # show your learning journal
-yoak init      # reconfigure model, project name, etc.
+./yoak.sh              # setup (first run) → chat
+./yoak.sh chat         # go straight to chat
+./yoak.sh serve        # start the web dashboard at http://127.0.0.1:8420
+./yoak.sh canvas       # print your Business Model Canvas
+./yoak.sh journal      # show your learning journal
+./yoak.sh init         # reconfigure model, project name, etc.
 ```
 
 ### Prerequisites
 
-- Python 3.12+
-- [Ollama](https://ollama.ai) (free, local) — or an API key from Anthropic, OpenAI, or Google
-- Node.js 18+ (only if you want the web dashboard)
+- Python 3.10+ (the script finds the right version for you)
+- That's it. Ollama is offered during first-run setup. No accounts, no keys.
 
 ## Architecture
 

@@ -13,6 +13,7 @@ if [ ! -d ".venv" ]; then
 fi
 
 source .venv/bin/activate
+pip install -q --upgrade pip
 echo "Installing dependencies..."
 pip install -q -e .
 

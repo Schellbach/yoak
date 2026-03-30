@@ -7,7 +7,7 @@ name = "yoak"
 version = "0.1.0"
 description = "Lean Startup Cofounder Agent — AI harness encoding Paul Graham, Steve Blank, and Steve Jobs philosophies"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
     "fastapi>=0.115",
@@ -38,7 +38,7 @@ yoak = "yoak.cli.main:app"
 packages = ["yoak"]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py310"
 line-length = 120
 
 [tool.ruff.lint]
