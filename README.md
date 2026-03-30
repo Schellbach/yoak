@@ -23,18 +23,25 @@ The result is an AI cofounder that asks the questions you're avoiding, challenge
 ```bash
 git clone https://github.com/Schellbach/yoak.git
 cd yoak
-./setup.sh                # creates venv, installs deps
+./setup.sh
 source .venv/bin/activate
-export ANTHROPIC_API_KEY="sk-ant-..."  # or OPENAI_API_KEY, GEMINI_API_KEY
-yoak                      # interactive setup → chat
+yoak
 ```
 
-That's it. On first run, `yoak` walks you through setup — picks up your API key automatically, asks your project name, and drops you into a conversation with your cofounder.
+That's it. No API key required. Yoak defaults to [Ollama](https://ollama.ai) for free, local, private AI. On first run it auto-detects what you have available and walks you through a 30-second setup.
 
-### Other ways to run
+### Want to use a frontier model instead?
 
 ```bash
-yoak chat      # skip setup, go straight to chat
+export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, GEMINI_API_KEY
+yoak init                               # picks up the key, lets you switch
+```
+
+### Commands
+
+```bash
+yoak           # interactive setup (first run) → chat
+yoak chat      # go straight to chat
 yoak serve     # start the web dashboard at http://127.0.0.1:8420
 yoak canvas    # print your Business Model Canvas
 yoak journal   # show your learning journal
@@ -44,7 +51,7 @@ yoak init      # reconfigure model, project name, etc.
 ### Prerequisites
 
 - Python 3.12+
-- An API key from Anthropic, OpenAI, or Google — or [Ollama](https://ollama.ai) for local models
+- [Ollama](https://ollama.ai) (free, local) — or an API key from Anthropic, OpenAI, or Google
 - Node.js 18+ (only if you want the web dashboard)
 
 ## Architecture
@@ -170,26 +177,17 @@ In chat mode, slash commands are available: `/workflow`, `/advance`, `/canvas`, 
 
 ## Model Support
 
-Yoak works with any model supported by [LiteLLM](https://docs.litellm.ai/docs/providers):
+Yoak defaults to **Ollama** (free, local, private — no API key needed). To upgrade to a frontier model, just set an API key and run `yoak init`.
 
-| Provider | Example Model String | Env Variable |
-|----------|---------------------|--------------|
-| Anthropic | `anthropic/claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` |
-| OpenAI | `gpt-4o` | `OPENAI_API_KEY` |
-| Google | `gemini/gemini-2.5-pro` | `GEMINI_API_KEY` |
-| Mistral | `mistral/mistral-large-latest` | `MISTRAL_API_KEY` |
-| Local (Ollama) | `ollama/llama3.1` | (none needed) |
+| Provider | Model String | Setup |
+|----------|-------------|-------|
+| **Ollama (default)** | `ollama/llama3.1` | `brew install ollama && ollama pull llama3.1` |
+| Anthropic | `anthropic/claude-sonnet-4-20250514` | `export ANTHROPIC_API_KEY=...` |
+| OpenAI | `gpt-4o` | `export OPENAI_API_KEY=...` |
+| Google | `gemini/gemini-2.5-pro` | `export GEMINI_API_KEY=...` |
+| Mistral | `mistral/mistral-large-latest` | `export MISTRAL_API_KEY=...` |
 
-To use Ollama:
-
-```bash
-# Install and start Ollama, pull a model
-ollama pull llama3.1
-
-# Configure Yoak
-yoak config set ollama.enabled true
-yoak config set ollama.model llama3.1
-```
+Any model supported by [LiteLLM](https://docs.litellm.ai/docs/providers) works. Run `yoak init` to switch models at any time.
 
 ## Project Structure
 
@@ -310,12 +308,12 @@ Yoak stores configuration in `~/.yoak/config.yaml` (override with `YOAK_DIR` env
 
 ```yaml
 model:
-  provider: anthropic
-  model: anthropic/claude-sonnet-4-20250514
+  provider: ollama
+  model: ollama/llama3.1
   temperature: 0.7
   max_tokens: 4096
 ollama:
-  enabled: false
+  enabled: true
   base_url: http://localhost:11434
   model: llama3.1
 server:

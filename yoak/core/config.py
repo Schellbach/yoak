@@ -16,15 +16,15 @@ DB_PATH = YOAK_DIR / "yoak.db"
 
 
 class ModelConfig(BaseModel):
-    provider: str = "anthropic"
-    model: str = "anthropic/claude-sonnet-4-20250514"
+    provider: str = "ollama"
+    model: str = "ollama/llama3.1"
     temperature: float = 0.7
     max_tokens: int = 4096
     api_base: str | None = None
 
 
 class OllamaConfig(BaseModel):
-    enabled: bool = False
+    enabled: bool = True
     base_url: str = "http://localhost:11434"
     model: str = "llama3.1"
 
