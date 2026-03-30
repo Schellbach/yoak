@@ -1,35 +1,24 @@
 .DEFAULT_GOAL := run
 
-# ── What you usually want ─────────────────────────────────────────────
-run:                ## Chat in the terminal (runs setup first if needed)
-	@bash yoak.sh
+run:                ## Start Yoak (installs everything on first run)
+	@bash yoak.sh $(ARGS)
 
-ui:                 ## Web app: API + dashboard (open http://127.0.0.1:8420)
-	@bash yoak.sh ui
+chat:               ## Chat with your cofounder
+	@bash yoak.sh chat
 
-talk:               ## Chat with your cofounder in the terminal
-	@bash yoak.sh talk
+serve:              ## Start the web dashboard
+	@bash yoak.sh serve
 
-setup:              ## Configure name, model, and paths
-	@bash yoak.sh setup
+init:               ## Reconfigure model, project name
+	@bash yoak.sh init
 
-notes:              ## Show your learning journal
-	@bash yoak.sh notes
+canvas:             ## Print your Business Model Canvas
+	@bash yoak.sh canvas
 
-bmc:                ## Print your Business Model Canvas
-	@bash yoak.sh bmc
+journal:            ## Show your learning journal
+	@bash yoak.sh journal
 
-# ── Older names (same commands) ───────────────────────────────────────
-chat: talk
-serve: ui
-init: setup
-journal: notes
-canvas: bmc
+help:               ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
 
-help:               ## List Make targets
-	@echo "Yoak — common commands:"
-	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
-	@echo ""
-	@echo "Aliases: chat=talk, serve=ui, init=setup, journal=notes, canvas=bmc"
-
-.PHONY: run ui talk setup notes bmc chat serve init journal canvas help
+.PHONY: run chat serve init canvas journal help
