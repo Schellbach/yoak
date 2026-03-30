@@ -20,55 +20,32 @@ The result is an AI cofounder that asks the questions you're avoiding, challenge
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.12+
-- Node.js 18+ (for the dashboard)
-- An API key from Anthropic, OpenAI, or Google (or Ollama for local models)
-
-### Install
-
 ```bash
 git clone https://github.com/Schellbach/yoak.git
 cd yoak
-
-# Python backend
-python3 -m venv .venv
+./setup.sh                # creates venv, installs deps
 source .venv/bin/activate
-pip install -e .
-
-# Dashboard (optional)
-cd dashboard && npm install && npm run build && cd ..
+export ANTHROPIC_API_KEY="sk-ant-..."  # or OPENAI_API_KEY, GEMINI_API_KEY
+yoak                      # interactive setup → chat
 ```
 
-### Configure
+That's it. On first run, `yoak` walks you through setup — picks up your API key automatically, asks your project name, and drops you into a conversation with your cofounder.
+
+### Other ways to run
 
 ```bash
-# Set your model (any LiteLLM-supported model string)
-yoak config set model.model "anthropic/claude-sonnet-4-20250514"
-
-# Set your API key via environment variable
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-# Or for OpenAI
-# yoak config set model.model "gpt-4o"
-# export OPENAI_API_KEY="sk-..."
-
-# Or use a local model via Ollama
-# yoak config set ollama.enabled true
-# yoak config set ollama.model "llama3.1"
+yoak chat      # skip setup, go straight to chat
+yoak serve     # start the web dashboard at http://127.0.0.1:8420
+yoak canvas    # print your Business Model Canvas
+yoak journal   # show your learning journal
+yoak init      # reconfigure model, project name, etc.
 ```
 
-### Run
+### Prerequisites
 
-```bash
-# Chat with your cofounder in the terminal
-yoak chat
-
-# Or launch the web dashboard
-yoak serve
-# Open http://127.0.0.1:8420
-```
+- Python 3.12+
+- An API key from Anthropic, OpenAI, or Google — or [Ollama](https://ollama.ai) for local models
+- Node.js 18+ (only if you want the web dashboard)
 
 ## Architecture
 
