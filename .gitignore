@@ -17,6 +17,9 @@ dashboard/dist/
 # IDE
 .vscode/
 .idea/
+
+# Claude Code local worktrees (nested repos; must not be committed)
+.claude/
 *.swp
 *.swo
 .DS_Store
