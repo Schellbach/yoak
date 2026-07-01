@@ -11,11 +11,31 @@ from yoak.memory.canvas import update_block
 from yoak.memory.hypotheses import create_hypothesis
 from yoak.memory.journal import add_entry
 
-_CANVAS_RE = re.compile(r"\[CANVAS:(\w+)\]\s*(.+)")
-_HYPOTHESIS_RE = re.compile(r"\[HYPOTHESIS:(\w+)\]\s*(.+)")
-_LEARNING_RE = re.compile(r"\[LEARNING\]\s*(.+)")
+_CANVAS_RE = re.compile(r"\[CANVAS:\s*(\w+)\]\s*(.+?)(?=\[(?:CANVAS|HYPOTHESIS|LEARNING)|$)", re.IGNORECASE)
+_HYPOTHESIS_RE = re.compile(
+    r"\[HYPOTHESIS:\s*(\w+)\]\s*(.+?)(?=\[(?:CANVAS|HYPOTHESIS|LEARNING)|$)",
+    re.IGNORECASE,
+)
+_LEARNING_RE = re.compile(r"\[LEARNING\]\s*(.+?)(?=\[(?:CANVAS|HYPOTHESIS|LEARNING)|$)", re.IGNORECASE)
+_TAG_LINE = re.compile(
+    r"^\s*#*\s*\**\[?(?:CANVAS|HYPOTHESIS|LEARNING)[^\n]*\]?",
+    re.IGNORECASE,
+)
+_STRAY_TAG = re.compile(
+    r"\*+\[?(?:CANVAS|HYPOTHESIS|LEARNING):\s*\w+\]?\s*[^\n]*|\[LEARNING\]\s*[^\n]*",
+    re.IGNORECASE,
+)
 
-VALID_BLOCKS = {
+_ARTIFACT_HEADER = re.compile(
+    r"^#{0,3}\s*(User|Assistant|Human|AI|System)\s*:?\s*",
+    re.IGNORECASE,
+)
+_ARTIFACT_LABEL = re.compile(
+    r"^(User|Assistant|Human|AI|System)\s*:\s*",
+    re.IGNORECASE,
+)
+
+_VALID_BLOCKS = {
     "customer_segments",
     "value_propositions",
     "channels",
@@ -36,34 +56,74 @@ class Extraction:
     clean_text: str
 
 
-def parse_response(text: str) -> Extraction:
-    """Parse structured tags from a response and return clean text + extracted items."""
-    canvas_updates = []
-    hypotheses = []
-    learnings = []
-    clean_lines = []
-
+def _normalize_tag_source(text: str) -> str:
+    """Remove markdown noise so tags parse even when models wrap them."""
+    lines = []
     for line in text.split("\n"):
         stripped = line.strip()
+        stripped = re.sub(r"^#+\s*", "", stripped)
+        stripped = re.sub(r"^\*+|\*+$", "", stripped).strip()
+        lines.append(stripped)
+    return "\n".join(lines)
 
-        m = _CANVAS_RE.match(stripped)
-        if m and m.group(1) in VALID_BLOCKS:
-            canvas_updates.append((m.group(1), m.group(2).strip()))
+
+def _extract_tags(text: str) -> tuple[list[tuple[str, str]], list[tuple[str, str]], list[tuple[str, str]]]:
+    canvas_updates: list[tuple[str, str]] = []
+    hypotheses: list[tuple[str, str]] = []
+    learnings: list[tuple[str, str]] = []
+
+    for match in _CANVAS_RE.finditer(text):
+        block_id = match.group(1).lower()
+        if block_id in _VALID_BLOCKS:
+            canvas_updates.append((block_id, match.group(2).strip().strip("*")))
+
+    for match in _HYPOTHESIS_RE.finditer(text):
+        block_id = match.group(1).lower()
+        if block_id in _VALID_BLOCKS:
+            hypotheses.append((block_id, match.group(2).strip().strip("*")))
+
+    for match in _LEARNING_RE.finditer(text):
+        learnings.append(_split_learning(match.group(1).strip().strip("*")))
+
+    return canvas_updates, hypotheses, learnings
+
+
+def sanitize_response_text(text: str) -> str:
+    """Strip prompt-template leaks (### User:, role labels, echoed turns)."""
+    for marker in ("### User:", "### Assistant:", "### Human:", "### System:"):
+        if marker in text:
+            text = text.split(marker, 1)[0]
+
+    cleaned_lines: list[str] = []
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if _ARTIFACT_HEADER.match(stripped) or _ARTIFACT_LABEL.match(stripped):
+            break
+        cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines).strip()
+
+
+def _strip_tag_lines(text: str) -> str:
+    clean_lines = []
+    for line in text.split("\n"):
+        stripped = line.strip()
+        normalized = re.sub(r"^#+\s*", "", stripped)
+        normalized = re.sub(r"^\*+|\*+$", "", normalized).strip()
+        if _TAG_LINE.match(normalized):
             continue
+        without_inline = _STRAY_TAG.sub("", line).strip()
+        if without_inline:
+            clean_lines.append(without_inline)
+    return "\n".join(clean_lines).strip()
 
-        m = _HYPOTHESIS_RE.match(stripped)
-        if m and m.group(1) in VALID_BLOCKS:
-            hypotheses.append((m.group(1), m.group(2).strip()))
-            continue
 
-        m = _LEARNING_RE.match(stripped)
-        if m:
-            learnings.append(_split_learning(m.group(1).strip()))
-            continue
-
-        clean_lines.append(line)
-
-    clean_text = "\n".join(clean_lines).strip()
+def parse_response(text: str) -> Extraction:
+    """Parse structured tags from a response and return clean text + extracted items."""
+    text = sanitize_response_text(text)
+    tag_source = _normalize_tag_source(text)
+    canvas_updates, hypotheses, learnings = _extract_tags(tag_source)
+    clean_text = _strip_tag_lines(text)
 
     return Extraction(
         canvas_updates=canvas_updates,

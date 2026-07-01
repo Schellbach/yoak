@@ -309,14 +309,6 @@ async def _chat_loop():
 
             await agent.auto_route(user_input)
 
-            if agent.active_workflow:
-                wf = agent.active_workflow
-                step = wf["current_step"] + 1
-                console.print(
-                    f"  [dim]{wf['name'].replace('_', ' ')} — step {step}/{wf['total_steps']}: "
-                    f"{wf['step_name']}[/dim]"
-                )
-
             try:
                 result = await agent.chat(user_input)
                 console.print(f"[bold blue]Yoak:[/bold blue] {result}")
@@ -333,6 +325,17 @@ async def _chat_loop():
                 console.print(f"[red]Error: {e}[/red]")
                 agent._messages = agent._messages[:-1]
                 continue
+
+            if agent.last_workflow_event:
+                console.print(f"  [dim]{agent.last_workflow_event}[/dim]")
+
+            if agent.active_workflow:
+                wf = agent.active_workflow
+                step = wf["current_step"] + 1
+                console.print(
+                    f"  [dim]{wf['name'].replace('_', ' ')} — step {step}/{wf['total_steps']}: "
+                    f"{wf['step_name']}[/dim]"
+                )
 
             # Show what was saved to memory
             ext = agent.last_extraction

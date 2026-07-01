@@ -11,41 +11,49 @@ class CustomerValidationWorkflow(Workflow):
         self.steps = [
             WorkflowStep(
                 name="What's the MVP?",
+                min_user_chars=25,
+                max_turns=1,
                 prompt_supplement=(
-                    "What's the smallest thing the founder can put in front of a customer "
-                    "to test willingness to pay? Push for concierge or wizard-of-oz before code. "
-                    "One question to clarify what they could ship this week."
+                    "What's the smallest thing they can put in front of a buyer this week? Push for "
+                    "concierge or wizard-of-oz before code. Challenge scope creep — one concrete offer, "
+                    "not a roadmap."
                 ),
             ),
             WorkflowStep(
                 name="Did anyone pay?",
+                min_user_chars=20,
+                max_turns=2,
                 prompt_supplement=(
-                    "Ask if they've gotten a real transaction — money, not a promise. "
-                    "If yes, record it. If not, ask what's blocking the ask. "
-                    "Use [CANVAS:revenue_streams] and [HYPOTHESIS:*] to capture what's learned."
+                    "Ask for a real transaction — money, not intent. If none yet, name what's blocking "
+                    "the ask and whether the offer is too vague. Use [CANVAS:revenue_streams] and "
+                    "[HYPOTHESIS:*] when something concrete emerges."
                 ),
             ),
             WorkflowStep(
                 name="Can you repeat it?",
+                min_user_chars=25,
+                max_turns=2,
                 prompt_supplement=(
-                    "One sale isn't a business. Ask: could someone else on the team close the same deal? "
-                    "What was the pitch? What were the objections? Start building the playbook."
+                    "One sale isn't a business. Could someone else close the same deal? What objections "
+                    "came up? Push if the pitch sounds founder-specific or unreplicable."
                 ),
             ),
             WorkflowStep(
                 name="Unit economics check",
+                min_user_chars=20,
+                max_turns=2,
                 prompt_supplement=(
-                    "Ask about the numbers: what does it cost to acquire a customer? "
-                    "What do they pay? How long do they stay? Don't need precision — "
-                    "ballpark is fine. Flag if LTV < 3x CAC. Record with [CANVAS:cost_structure]."
+                    "Ballpark CAC, price, and retention. Flag if LTV looks below ~3x CAC or if they "
+                    "don't know the numbers yet — that's a problem. Record with [CANVAS:cost_structure]."
                 ),
             ),
             WorkflowStep(
                 name="Product/market fit signal",
+                min_user_chars=9999,
+                max_turns=1,
                 prompt_supplement=(
-                    "Ask: if you took this product away tomorrow, would anyone be upset? "
-                    "That's the real test. If yes — strong signal, consider scaling. "
-                    "If no — keep iterating. Record the assessment with [LEARNING]."
+                    "Direct verdict: would customers be upset if this disappeared tomorrow? Say what "
+                    "the evidence supports and what it doesn't. Record with [LEARNING]."
                 ),
             ),
         ]

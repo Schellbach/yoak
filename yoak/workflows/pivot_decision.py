@@ -11,26 +11,31 @@ class PivotDecisionWorkflow(Workflow):
         self.steps = [
             WorkflowStep(
                 name="What's not working?",
+                min_user_chars=30,
+                max_turns=1,
                 prompt_supplement=(
-                    "Ask the founder to describe what's not working. Listen for: "
-                    "is the problem real but the solution wrong? Or is the customer wrong? "
-                    "Or is nothing working at all? One question to understand the pain."
+                    "From what they've already said, name what's failing — wrong customer, weak pain, "
+                    "bad solution, or no traction at all. Ask one hard question only if critical context "
+                    "is missing."
                 ),
             ),
             WorkflowStep(
                 name="What does the evidence say?",
+                min_user_chars=20,
+                max_turns=2,
                 prompt_supplement=(
-                    "Look at the canvas and hypotheses. Which ones have been invalidated? "
-                    "How many experiments have they run? If fewer than 3 serious attempts, "
-                    "it's probably too early to pivot. Be honest about the data."
+                    "Review canvas and hypotheses: what's invalidated? If fewer than ~3 serious experiments, "
+                    "say it's probably too early to pivot. Don't sugarcoat thin evidence."
                 ),
             ),
             WorkflowStep(
                 name="What would you change?",
+                min_user_chars=9999,
+                max_turns=1,
                 prompt_supplement=(
-                    "If they should pivot: suggest what to change (customer, problem, solution, "
-                    "channel, or revenue model) and why. If they should persevere: say so and "
-                    "suggest the next experiment. Record the decision with [LEARNING]."
+                    "Recommend pivot or persevere with reasons. If pivoting, name what to change "
+                    "(customer, problem, solution, channel, revenue) and the next experiment. "
+                    "Record with [LEARNING]."
                 ),
             ),
         ]

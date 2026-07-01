@@ -9,6 +9,7 @@ import aiosqlite
 
 from yoak.core.config import Settings
 from yoak.core.extractor import Extraction, apply_extractions, parse_response
+from yoak.core.intents import is_meta_request, wants_canvas_display
 from yoak.core.router import route_message
 from yoak.memory.canvas import canvas_summary, get_canvas
 from yoak.memory.journal import get_phase, get_recent_summary
@@ -18,7 +19,7 @@ from yoak.models.streaming import StreamAccumulator
 from yoak.philosophy.synthesis import build_context_prompt, load_system_prompt
 from yoak.skills import get_skill
 from yoak.workflows import create_workflow
-from yoak.workflows.base import Workflow
+from yoak.workflows.base import WORKFLOW_CONVERSATION_RULES, Workflow
 
 
 class Agent:
@@ -31,6 +32,34 @@ class Agent:
         self._conversation_id: str = uuid.uuid4().hex[:12]
         self._messages: list[Message] = []
         self.last_extraction: Extraction | None = None
+        self.last_workflow_event: str | None = None
+
+    def _prepare_workflow_turn(self, user_message: str) -> None:
+        """Record the user's turn and auto-advance when the step is satisfied."""
+        self.last_workflow_event = None
+        if not self._active_workflow or self._active_workflow.is_complete:
+            return
+        if is_meta_request(user_message):
+            return
+        wf = self._active_workflow
+        wf.record_user_turn(user_message)
+        if wf.should_auto_advance(user_message):
+            prior = wf.progress
+            wf.advance()
+            if wf.is_complete:
+                name = wf.name
+                self._active_workflow = None
+                self.last_workflow_event = f"Completed workflow '{name}' after {prior}"
+            else:
+                self.last_workflow_event = f"Advanced from {prior} to {wf.progress}"
+
+    def _finalize_workflow_turn(self) -> None:
+        """Complete the workflow after the model delivers the final step."""
+        if not self._active_workflow or self._active_workflow.is_complete:
+            return
+        if self._active_workflow.complete_after_response():
+            self.last_workflow_event = "Workflow completed."
+            self._active_workflow = None
 
     async def _ensure_db(self) -> aiosqlite.Connection:
         if self._db is None:
@@ -57,9 +86,15 @@ class Agent:
         workflow_supplement = ""
         if self._active_workflow and not self._active_workflow.is_complete:
             workflow_supplement = (
-                f"\n\n---\n## Active Workflow: {self._active_workflow.progress}\n\n"
+                WORKFLOW_CONVERSATION_RULES
+                + f"\n\n---\n## Active Workflow: {self._active_workflow.progress}\n\n"
                 + self._active_workflow.get_prompt_supplement()
             )
+            if self.last_workflow_event:
+                workflow_supplement += (
+                    f"\n\nThe workflow just updated: {self.last_workflow_event}. "
+                    "Respond for the current step only."
+                )
 
         skill_supplement = ""
         if not self._active_workflow:
@@ -84,8 +119,21 @@ class Agent:
 
         return extraction.clean_text
 
+    async def _canvas_display_response(self, user_message: str) -> str:
+        db = await self._ensure_db()
+        blocks = await get_canvas(db)
+        summary = canvas_summary(blocks)
+        return f"Here's your Business Model Canvas:\n\n{summary}"
+
     async def chat(self, user_message: str) -> str:
         """Send a message and get a complete response."""
+        if wants_canvas_display(user_message):
+            self._messages.append(Message(role="user", content=user_message))
+            response = await self._canvas_display_response(user_message)
+            self._messages.append(Message(role="assistant", content=response))
+            return response
+
+        self._prepare_workflow_turn(user_message)
         system_msgs = await self._build_system_messages(user_message)
         self._messages.append(Message(role="user", content=user_message))
         all_messages = system_msgs + self._messages
@@ -94,10 +142,19 @@ class Agent:
 
         clean = await self._process_response(result.content)
         self._messages.append(Message(role="assistant", content=clean))
+        self._finalize_workflow_turn()
         return clean
 
     async def chat_stream(self, user_message: str) -> AsyncIterator[Chunk]:
         """Send a message and stream the response."""
+        if wants_canvas_display(user_message):
+            self._messages.append(Message(role="user", content=user_message))
+            response = await self._canvas_display_response(user_message)
+            self._messages.append(Message(role="assistant", content=response))
+            yield Chunk(delta=response, finish_reason="stop")
+            return
+
+        self._prepare_workflow_turn(user_message)
         system_msgs = await self._build_system_messages(user_message)
         self._messages.append(Message(role="user", content=user_message))
         all_messages = system_msgs + self._messages
@@ -109,6 +166,7 @@ class Agent:
 
         clean = await self._process_response(accumulator.text)
         self._messages.append(Message(role="assistant", content=clean))
+        self._finalize_workflow_turn()
 
     def start_workflow(self, workflow_name: str) -> bool:
         wf = create_workflow(workflow_name)
@@ -144,6 +202,7 @@ class Agent:
         self._messages = []
         self._active_workflow = None
         self._conversation_id = uuid.uuid4().hex[:12]
+        self.last_workflow_event = None
 
     async def auto_route(self, user_message: str) -> str | None:
         if self._active_workflow:

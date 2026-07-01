@@ -21,6 +21,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     workflow: dict | None = None
+    workflow_event: str | None = None
     routed_to: str | None = None
 
 
@@ -34,6 +35,7 @@ async def chat(req: ChatRequest, agent: Agent = Depends(get_agent)):
     return ChatResponse(
         response=response,
         workflow=agent.active_workflow,
+        workflow_event=agent.last_workflow_event,
         routed_to=routed,
     )
 
@@ -75,7 +77,9 @@ async def ws_chat(websocket: WebSocket):
             if payload.get("auto_route", True):
                 routed = await agent.auto_route(message)
                 if routed:
-                    await websocket.send_json({"type": "workflow_started", "workflow": routed})
+                    await websocket.send_json(
+                        {"type": "workflow_started", "workflow": agent.active_workflow}
+                    )
 
             async for chunk in agent.chat_stream(message):
                 await websocket.send_json({"type": "chunk", "delta": chunk.delta})
@@ -84,6 +88,7 @@ async def ws_chat(websocket: WebSocket):
                         "type": "done",
                         "finish_reason": chunk.finish_reason,
                         "workflow": agent.active_workflow,
+                        "workflow_event": agent.last_workflow_event,
                     })
     except WebSocketDisconnect:
         pass

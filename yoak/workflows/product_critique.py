@@ -11,27 +11,31 @@ class ProductCritiqueWorkflow(Workflow):
         self.steps = [
             WorkflowStep(
                 name="What's the experience?",
+                min_user_chars=30,
+                max_turns=1,
                 prompt_supplement=(
-                    "Ask the founder to describe the ideal customer experience in plain language — "
-                    "no technology, no features. Just: what happens for the customer? "
-                    "Then ask where reality falls short."
+                    "If they already described the product, skip re-interviewing. State the ideal "
+                    "customer experience in one sentence, where reality falls short, and one thing "
+                    "that worries you about the UX."
                 ),
             ),
             WorkflowStep(
                 name="What would you cut?",
+                min_user_chars=20,
+                max_turns=2,
                 prompt_supplement=(
-                    "Ask: what could you remove and still deliver the core value? "
-                    "Push hard here. Most products have too much, not too little. "
-                    "The goal is to find the one thing it does brilliantly."
+                    "Push hard on focus: what could they remove and still deliver core value? "
+                    "Most products have too much. Challenge feature lists that dilute the main job."
                 ),
             ),
             WorkflowStep(
                 name="Honest critique",
+                min_user_chars=9999,
+                max_turns=1,
                 prompt_supplement=(
-                    "Give your honest take on the product in 3-4 sentences. "
-                    "What's the one thing that should improve first? "
-                    "Apply Jobs's test: does it feel inevitable, like obviously how it should work? "
-                    "Record any key insight with [LEARNING]."
+                    "Give an honest 3-4 sentence critique: what's strong, what's weak, the one thing "
+                    "to fix first. Apply Jobs's test — does it feel inevitable? Include at least one "
+                    "uncomfortable truth. Record with [LEARNING] if appropriate."
                 ),
             ),
         ]

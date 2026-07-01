@@ -11,26 +11,29 @@ class PMFAssessmentWorkflow(Workflow):
         self.steps = [
             WorkflowStep(
                 name="The disappointment test",
+                min_user_chars=20,
+                max_turns=1,
                 prompt_supplement=(
-                    "Ask: 'If you shut down tomorrow, would anyone be genuinely upset?' "
-                    "Not politely disappointed — actually upset. Push for honesty. "
-                    "This is the Sean Ellis test in plain language."
+                    "Apply the Sean Ellis test in plain language: if they shut down tomorrow, would "
+                    "anyone be genuinely upset? Push for honesty — polite interest doesn't count."
                 ),
             ),
             WorkflowStep(
                 name="Where's the pull?",
+                min_user_chars=25,
+                max_turns=2,
                 prompt_supplement=(
-                    "Ask about organic growth signals: are customers coming without marketing? "
-                    "Are they referring others? Is usage growing week over week? "
-                    "Get specific numbers if possible. Record what you learn."
+                    "Ask for organic pull: referrals, usage growth, customers arriving without marketing. "
+                    "Challenge hand-wavy answers — get numbers or admit you don't have them yet."
                 ),
             ),
             WorkflowStep(
                 name="Verdict",
+                min_user_chars=9999,
+                max_turns=1,
                 prompt_supplement=(
-                    "Based on what you've heard, give a direct verdict: strong fit, partial fit, "
-                    "or no fit yet. If partial — where's the subsegment with the strongest signal? "
-                    "If no fit — what should they go back and test? Record with [LEARNING]."
+                    "Give a direct verdict: strong fit, partial fit, or not yet — with reasons. "
+                    "Name the strongest subsegment if partial. Record with [LEARNING]."
                 ),
             ),
         ]

@@ -22,6 +22,9 @@ def build_context_prompt(
 ) -> str:
     """Build the startup state context injected alongside the system prompt."""
     parts = [
+        "## Conversation discipline",
+        "The messages in this chat are the source of truth. Do not re-derive the same summary "
+        "each turn. Add new insight, pushback, or a sharper question every time.",
         f"## Current Phase: {blank.PHASE_DESCRIPTIONS.get(phase, phase)}\n",
         canvas_summary,
         journal_summary,
