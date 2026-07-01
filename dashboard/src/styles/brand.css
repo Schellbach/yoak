@@ -1,0 +1,72 @@
+:root {
+  --phi: 1.618;
+  --space-2xs: 0.382rem;
+  --space-xs: 0.618rem;
+  --space-sm: 1rem;
+  --space-md: 1.618rem;
+  --space-lg: 2.618rem;
+  --radius-sm: 0.618rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.618rem;
+
+  --paper: #f7f1e5;
+  --paper-soft: #fffaf0;
+  --ink: #15130f;
+  --muted: #716858;
+  --line: rgba(21, 19, 15, 0.12);
+  --gold: #b38a35;
+  --gold-soft: #d4a84b;
+  --moss: #53624a;
+  --mint: #8fc4a8;
+  --rust: #7b2f18;
+  --clay: #8a6f60;
+  --shadow: 0 18px 50px rgba(60, 43, 18, 0.1);
+  --surface-elevated: rgba(255, 250, 240, 0.9);
+  --surface-muted: rgba(255, 250, 240, 0.56);
+  --surface-button: rgba(255, 250, 240, 0.88);
+  --border-soft: rgba(21, 19, 15, 0.09);
+  --border-strong: rgba(21, 19, 15, 0.14);
+  --card-shadow: rgba(60, 43, 18, 0.06);
+  --card-shadow-hover: rgba(60, 43, 18, 0.11);
+  --backdrop: rgba(21, 19, 15, 0.28);
+  --chip-active-bg: rgba(179, 138, 53, 0.13);
+  --chip-active-border: rgba(179, 138, 53, 0.52);
+  --tag-bg: rgba(83, 98, 74, 0.1);
+  --dialog-border: rgba(179, 138, 53, 0.32);
+  --glow-mint: rgba(143, 196, 168, 0.16);
+  --glow-gold: rgba(179, 138, 53, 0.1);
+  --shell-line-moss: rgba(83, 98, 74, 0.08);
+  --shell-line-gold: rgba(179, 138, 53, 0.06);
+  --compare-a: rgba(179, 138, 53, 0.1);
+  --compare-b: rgba(143, 196, 168, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --paper: #12100d;
+  --paper-soft: #1a1712;
+  --ink: #f7f1e5;
+  --muted: #a89880;
+  --line: rgba(247, 241, 229, 0.12);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  --surface-elevated: rgba(26, 23, 18, 0.92);
+  --surface-muted: rgba(26, 23, 18, 0.72);
+  --surface-button: rgba(26, 23, 18, 0.88);
+  --border-soft: rgba(247, 241, 229, 0.08);
+  --border-strong: rgba(247, 241, 229, 0.14);
+  --card-shadow: rgba(0, 0, 0, 0.24);
+  --card-shadow-hover: rgba(0, 0, 0, 0.36);
+  --backdrop: rgba(0, 0, 0, 0.62);
+  --chip-active-bg: rgba(179, 138, 53, 0.2);
+  --chip-active-border: rgba(212, 168, 75, 0.48);
+  --tag-bg: rgba(143, 196, 168, 0.12);
+  --dialog-border: rgba(179, 138, 53, 0.38);
+  --glow-mint: rgba(143, 196, 168, 0.08);
+  --glow-gold: rgba(179, 138, 53, 0.06);
+  --shell-line-moss: rgba(143, 196, 168, 0.06);
+  --shell-line-gold: rgba(179, 138, 53, 0.05);
+  --gold-soft: #e0bc66;
+  --mint: #9fd4b8;
+  --compare-a: rgba(179, 138, 53, 0.14);
+  --compare-b: rgba(143, 196, 168, 0.1);
+  color-scheme: dark;
+}

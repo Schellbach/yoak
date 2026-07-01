@@ -5,12 +5,15 @@ import {
   BookOpen,
   BarChart3,
   Settings,
+  Moon,
+  Sun,
 } from "lucide-react";
 import ChatPage from "./pages/ChatPage";
 import CanvasPage from "./pages/CanvasPage";
 import JournalPage from "./pages/JournalPage";
 import OverviewPage from "./pages/OverviewPage";
 import SettingsPage from "./pages/SettingsPage";
+import { useTheme } from "./hooks/useTheme";
 
 const navItems = [
   { to: "/overview", icon: BarChart3, label: "Overview" },
@@ -21,38 +24,46 @@ const navItems = [
 ];
 
 export default function App() {
-  return (
-    <div className="flex h-screen">
-      <nav className="flex w-16 flex-col items-center gap-1 border-r border-gray-800 bg-gray-900 py-4">
-        <div className="mb-4 text-xl font-bold text-yoak-400">Y</div>
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            title={label}
-            className={({ isActive }) =>
-              `flex h-10 w-10 items-center justify-center rounded-lg transition ${
-                isActive
-                  ? "bg-yoak-600/20 text-yoak-400"
-                  : "text-gray-500 hover:bg-gray-800 hover:text-gray-300"
-              }`
-            }
-          >
-            <Icon size={20} />
-          </NavLink>
-        ))}
-      </nav>
+  const { theme, toggleTheme } = useTheme();
 
-      <main className="flex-1 overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Navigate to="/overview" replace />} />
-          <Route path="/overview" element={<OverviewPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/canvas" element={<CanvasPage />} />
-          <Route path="/journal" element={<JournalPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </main>
-    </div>
+  return (
+    <>
+      <div className="shell-lines" aria-hidden="true" />
+      <div className="brand-app flex h-screen">
+        <nav className="brand-nav shrink-0">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label="Toggle dark mode"
+            title="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <div className="mb-2 font-serif text-sm tracking-tight" style={{ color: "var(--moss)" }}>Yoak</div>
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              title={label}
+              className={({ isActive }) => `brand-nav-link ${isActive ? "active" : ""}`}
+            >
+              <Icon size={20} />
+            </NavLink>
+          ))}
+        </nav>
+
+        <main className="flex-1 overflow-hidden">
+          <Routes>
+            <Route path="/" element={<Navigate to="/overview" replace />} />
+            <Route path="/overview" element={<OverviewPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/canvas" element={<CanvasPage />} />
+            <Route path="/journal" element={<JournalPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </main>
+      </div>
+    </>
   );
 }

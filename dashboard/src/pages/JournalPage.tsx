@@ -3,12 +3,12 @@ import { Plus, BookOpen, GitBranch, Lightbulb, Flag, Users, FlaskConical } from 
 import { getJournal, createJournalEntry } from "@/api/client";
 
 const TYPE_CONFIG: Record<string, { icon: typeof BookOpen; color: string; label: string }> = {
-  learning: { icon: Lightbulb, color: "text-yellow-400", label: "Learning" },
-  pivot: { icon: GitBranch, color: "text-red-400", label: "Pivot" },
-  decision: { icon: Flag, color: "text-blue-400", label: "Decision" },
-  milestone: { icon: Flag, color: "text-green-400", label: "Milestone" },
-  interview: { icon: Users, color: "text-purple-400", label: "Interview" },
-  experiment: { icon: FlaskConical, color: "text-orange-400", label: "Experiment" },
+  learning: { icon: Lightbulb, color: "var(--gold)", label: "Learning" },
+  pivot: { icon: GitBranch, color: "var(--rust)", label: "Pivot" },
+  decision: { icon: Flag, color: "var(--moss)", label: "Decision" },
+  milestone: { icon: Flag, color: "var(--mint)", label: "Milestone" },
+  interview: { icon: Users, color: "var(--clay)", label: "Interview" },
+  experiment: { icon: FlaskConical, color: "var(--gold-soft)", label: "Experiment" },
 };
 
 export default function JournalPage() {
@@ -34,25 +34,23 @@ export default function JournalPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between border-b border-gray-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">Learning Journal</h1>
+      <header className="page-header">
+        <h1>Journal</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary flex items-center gap-1 text-xs">
           <Plus size={14} /> New Entry
         </button>
       </header>
 
-      <div className="flex gap-2 border-b border-gray-800 px-6 py-2">
-        <button
-          onClick={() => setFilter(null)}
-          className={`btn-ghost text-xs ${!filter ? "text-yoak-400" : ""}`}
-        >
+      <div className="flex flex-wrap gap-2 border-b px-6 py-2" style={{ borderColor: "var(--line)" }}>
+        <button type="button" onClick={() => setFilter(null)} className={`filter-chip ${!filter ? "active" : ""}`}>
           All
         </button>
         {Object.entries(TYPE_CONFIG).map(([key, { label }]) => (
           <button
             key={key}
+            type="button"
             onClick={() => setFilter(key)}
-            className={`btn-ghost text-xs ${filter === key ? "text-yoak-400" : ""}`}
+            className={`filter-chip ${filter === key ? "active" : ""}`}
           >
             {label}
           </button>
@@ -60,7 +58,7 @@ export default function JournalPage() {
       </div>
 
       {showForm && (
-        <div className="border-b border-gray-800 bg-gray-900/50 px-6 py-4 space-y-3">
+        <div className="space-y-3 border-b px-6 py-4" style={{ borderColor: "var(--line)", background: "var(--surface-muted)" }}>
           <div className="flex gap-3">
             <select
               value={form.entry_type}
@@ -86,35 +84,39 @@ export default function JournalPage() {
             rows={3}
           />
           <div className="flex gap-2">
-            <button onClick={handleCreate} className="btn-primary text-xs">Save</button>
-            <button onClick={() => setShowForm(false)} className="btn-ghost text-xs">Cancel</button>
+            <button type="button" onClick={handleCreate} className="btn-primary text-xs">Save</button>
+            <button type="button" onClick={() => setShowForm(false)} className="btn-ghost text-xs">Cancel</button>
           </div>
         </div>
       )}
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {entries.length === 0 ? (
-          <p className="text-center text-gray-600 mt-8">No entries yet. Start capturing your learnings.</p>
+          <p className="mt-8 text-center" style={{ color: "var(--muted)" }}>No entries yet. Start capturing your learnings.</p>
         ) : (
           <div className="space-y-3">
             {entries.map((e) => {
               const cfg = TYPE_CONFIG[e.entry_type] || TYPE_CONFIG.learning;
               const Icon = cfg.icon;
               return (
-                <div key={e.id} className="card flex gap-3">
-                  <div className={`mt-0.5 ${cfg.color}`}>
+                <div
+                  key={e.id}
+                  className="card flex gap-3"
+                  style={{ borderLeft: `3px solid ${cfg.color}` }}
+                >
+                  <div className="mt-0.5" style={{ color: cfg.color }}>
                     <Icon size={18} />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
-                      <h3 className="font-medium text-sm">{e.title}</h3>
-                      <span className="text-xs text-gray-600">{e.created_at}</span>
+                      <h3 className="text-sm font-semibold" style={{ color: "var(--ink)" }}>{e.title}</h3>
+                      <span className="text-xs" style={{ color: "var(--muted)" }}>{e.created_at}</span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1 whitespace-pre-wrap">{e.content}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm" style={{ color: "var(--muted)" }}>{e.content}</p>
                     {e.tags.length > 0 && (
-                      <div className="flex gap-1 mt-2">
+                      <div className="mt-2 flex gap-1">
                         {e.tags.map((t: string) => (
-                          <span key={t} className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-gray-500">{t}</span>
+                          <span key={t} className="tag">{t}</span>
                         ))}
                       </div>
                     )}

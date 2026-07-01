@@ -27,20 +27,24 @@ export default function SettingsPage() {
     }
   };
 
-  if (!config) return <div className="p-6 text-gray-500">Loading...</div>;
+  if (!config) {
+    return <div className="p-6" style={{ color: "var(--muted)" }}>Loading...</div>;
+  }
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <header className="border-b border-gray-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">Settings</h1>
+      <header className="page-header">
+        <h1>Settings</h1>
       </header>
 
-      <div className="p-6 space-y-6 max-w-2xl">
+      <div className="max-w-2xl space-y-6 p-6">
         <div className="card space-y-4">
-          <h2 className="text-sm font-semibold text-gray-400">Model Configuration</h2>
+          <h2 className="font-serif text-sm" style={{ color: "var(--muted)" }}>Model Configuration</h2>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Model</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Model
+            </label>
             <input
               list="yoak-models"
               defaultValue={config.model?.model}
@@ -52,13 +56,12 @@ export default function SettingsPage() {
                 <option key={m} value={m} />
               ))}
             </datalist>
-            <p className="text-xs text-gray-600 mt-1">
-              Cloud: deepseek/deepseek-chat, zhipuai/glm-4-flash, gpt-4o, anthropic/claude-sonnet-4-20250514
-            </p>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Temperature</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Temperature
+            </label>
             <input
               type="number"
               step="0.1"
@@ -71,7 +74,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Max Tokens</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Max Tokens
+            </label>
             <input
               type="number"
               step="256"
@@ -84,26 +89,30 @@ export default function SettingsPage() {
         </div>
 
         <div className="card space-y-4">
-          <h2 className="text-sm font-semibold text-gray-400">Ollama (Local Models)</h2>
+          <h2 className="font-serif text-sm" style={{ color: "var(--muted)" }}>Ollama (Local Models)</h2>
 
           <div className="flex items-center gap-3">
-            <label className="text-xs text-gray-500">Enabled</label>
+            <label className="text-xs" style={{ color: "var(--muted)" }}>Enabled</label>
             <button
+              type="button"
               onClick={() => handleSave("ollama.enabled", !config.ollama?.enabled)}
-              className={`relative h-6 w-11 rounded-full transition ${
-                config.ollama?.enabled ? "bg-yoak-600" : "bg-gray-700"
-              }`}
+              className="relative h-6 w-11 rounded-full transition"
+              style={{ background: config.ollama?.enabled ? "var(--moss)" : "var(--line)" }}
             >
               <span
-                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition ${
-                  config.ollama?.enabled ? "translate-x-5" : ""
-                }`}
+                className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full transition"
+                style={{
+                  background: "var(--paper-soft)",
+                  transform: config.ollama?.enabled ? "translateX(1.25rem)" : "translateX(0)",
+                }}
               />
             </button>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Base URL</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Base URL
+            </label>
             <input
               defaultValue={config.ollama?.base_url}
               onBlur={(e) => handleSave("ollama.base_url", e.target.value)}
@@ -112,7 +121,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Model</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Model
+            </label>
             <input
               list="yoak-ollama-models"
               defaultValue={config.ollama?.model}
@@ -131,9 +142,11 @@ export default function SettingsPage() {
         </div>
 
         <div className="card space-y-4">
-          <h2 className="text-sm font-semibold text-gray-400">Project</h2>
+          <h2 className="font-serif text-sm" style={{ color: "var(--muted)" }}>Project</h2>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Project Name</label>
+            <label className="mb-1 block text-xs font-extrabold uppercase tracking-wide" style={{ color: "var(--muted)" }}>
+              Project Name
+            </label>
             <input
               defaultValue={config.project_name}
               onBlur={(e) => handleSave("project_name", e.target.value)}
@@ -143,9 +156,12 @@ export default function SettingsPage() {
         </div>
 
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-green-400">
+          <div className="flex items-center gap-2 text-sm" style={{ color: "var(--moss)" }}>
             <Save size={14} /> Settings saved
           </div>
+        )}
+        {saving && !saved && (
+          <p className="text-sm" style={{ color: "var(--muted)" }}>Saving...</p>
         )}
       </div>
     </div>
