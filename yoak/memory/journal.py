@@ -124,3 +124,9 @@ async def set_phase(db: aiosqlite.Connection, phase: str) -> None:
         (phase,),
     )
     await db.commit()
+
+
+async def clear_journal(db: aiosqlite.Connection) -> None:
+    """Remove all journal entries."""
+    await db.execute("DELETE FROM journal_entries")
+    await db.commit()

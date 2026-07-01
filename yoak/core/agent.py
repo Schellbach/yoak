@@ -12,7 +12,7 @@ from yoak.core.extractor import Extraction, apply_extractions, parse_response
 from yoak.core.intents import is_meta_request, wants_canvas_display
 from yoak.core.router import route_message
 from yoak.memory.canvas import canvas_summary, clear_canvas, get_canvas
-from yoak.memory.journal import get_phase, get_recent_summary
+from yoak.memory.journal import clear_journal, get_phase, get_recent_summary
 from yoak.memory.store import get_db
 from yoak.models.provider import Chunk, Message, complete, stream
 from yoak.models.streaming import StreamAccumulator
@@ -215,9 +215,11 @@ class Agent:
         await clear_canvas(db)
 
     async def reset_all(self) -> None:
-        """Clear chat and canvas."""
+        """Clear chat, canvas, and journal — full fresh start."""
         self._reset_chat_state()
-        await self.reset_canvas()
+        db = await self._ensure_db()
+        await clear_canvas(db)
+        await clear_journal(db)
 
     async def auto_route(self, user_message: str) -> str | None:
         if self._active_workflow:

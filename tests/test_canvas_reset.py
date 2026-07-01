@@ -60,3 +60,21 @@ async def test_reset_canvas_leaves_chat_intact(tmp_path):
     assert all(b.content == "" for b in blocks)
     assert len(agent.conversation_history) == 1
     await agent.close()
+
+
+@pytest.mark.asyncio
+async def test_reset_all_clears_journal(tmp_path):
+    from yoak.memory.journal import add_entry, list_entries
+
+    settings = Settings(db_path=str(tmp_path / "yoak.db"))
+    agent = Agent(settings)
+    db = await agent.get_db()
+    await update_block(db, "customer_segments", "Remote-working Bitcoiners")
+    await add_entry(db, "learning", "Prior session", "Bitcoiners need community")
+
+    await agent.reset_all()
+
+    blocks = await get_canvas(db)
+    assert all(b.content == "" and not b.hypotheses for b in blocks)
+    assert await list_entries(db) == []
+    await agent.close()

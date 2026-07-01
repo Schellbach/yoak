@@ -174,7 +174,21 @@ yoak journal   — Show recent learning journal entries
 yoak config    — Manage configuration (show, set)
 ```
 
-In chat mode, slash commands are available: `/workflow`, `/advance`, `/canvas`, `/phase`, `/reset`, `/quit`.
+In **chat mode** (CLI only), slash commands are intercepted before they reach the model:
+
+| Command | Description |
+|---------|-------------|
+| `/canvas` | Print the current Business Model Canvas |
+| `/workflow` | Show active workflow, or start one: `/workflow idea_evaluation` |
+| `/advance` | Manually advance the active workflow step |
+| `/phase` | Show current phase, or set it: `/phase validation` |
+| `/chatreset` | Clear conversation history and active workflow |
+| `/canvasreset` | Clear canvas blocks and hypotheses |
+| `/reset` | Clear chat, canvas, and learning journal (full fresh start) |
+| `/model` | Show the configured model |
+| `/quit` | Exit chat |
+
+The dashboard uses buttons and API calls instead of slash commands. In chat, you can also ask naturally (e.g. *“show the canvas”*) — that is handled by the agent, not the slash-command router.
 
 ## Model Support
 
@@ -272,10 +286,11 @@ The API runs on `http://127.0.0.1:8420` with interactive docs at `/docs`.
 |--------|----------|-------------|
 | `POST` | `/api/chat` | Send a message, get a response |
 | `WS` | `/api/ws/chat` | Streaming chat via WebSocket |
-| `POST` | `/api/chat/reset` | Clear conversation history |
+| `POST` | `/api/chat/reset` | Clear conversation history and active workflow |
 | `GET` | `/api/chat/history` | Get conversation messages |
 | `GET` | `/api/canvas` | Get all 9 BMC blocks with hypotheses |
 | `PUT` | `/api/canvas/{block_id}` | Update a canvas block |
+| `POST` | `/api/canvas/reset` | Clear canvas blocks and hypotheses |
 | `GET` | `/api/hypotheses` | List hypotheses (filter by block, status) |
 | `POST` | `/api/hypotheses` | Create a hypothesis |
 | `PATCH` | `/api/hypotheses/{id}` | Update status/confidence |

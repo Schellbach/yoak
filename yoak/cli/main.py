@@ -367,10 +367,16 @@ async def _handle_command(cmd: str, agent):
         console.print("[dim]Conversation reset.[/dim]")
     elif command == "/canvasreset":
         await agent.reset_canvas()
-        console.print("[dim]Business Model Canvas reset.[/dim]")
+        blocks = await get_canvas(await agent.get_db())
+        empty = sum(1 for b in blocks if not b.content and not b.hypotheses)
+        console.print(f"[dim]Business Model Canvas reset ({empty}/9 blocks empty).[/dim]")
     elif command == "/reset":
         await agent.reset_all()
-        console.print("[dim]Conversation and canvas reset.[/dim]")
+        blocks = await get_canvas(await agent.get_db())
+        empty = sum(1 for b in blocks if not b.content and not b.hypotheses)
+        console.print(
+            f"[dim]Conversation, canvas, and journal reset ({empty}/9 canvas blocks empty).[/dim]"
+        )
     elif command == "/workflow":
         if len(parts) > 1:
             name = parts[1]
