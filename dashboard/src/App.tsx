@@ -5,8 +5,6 @@ import {
   BookOpen,
   BarChart3,
   Settings,
-  Moon,
-  Sun,
 } from "lucide-react";
 import ChatPage from "./pages/ChatPage";
 import CanvasPage from "./pages/CanvasPage";
@@ -24,7 +22,7 @@ const navItems = [
 ];
 
 export default function App() {
-  const { theme, toggleTheme } = useTheme();
+  const { toggleTheme } = useTheme();
 
   return (
     <>
@@ -38,7 +36,7 @@ export default function App() {
             aria-label="Toggle dark mode"
             title="Toggle theme"
           >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            𓆉
           </button>
           <div className="mb-2 font-serif text-sm tracking-tight" style={{ color: "var(--moss)" }}>Yoak</div>
           {navItems.map(({ to, icon: Icon, label }) => (
