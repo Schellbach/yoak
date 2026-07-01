@@ -2,23 +2,28 @@ import { useState, useEffect } from "react";
 import { Plus, Check, X, AlertTriangle } from "lucide-react";
 import {
   getCanvas,
-  updateCanvasBlock,
   createHypothesis,
   updateHypothesis,
   deleteHypothesis,
 } from "@/api/client";
 
 const BLOCK_LABELS: Record<string, string> = {
+  problem: "Problem",
+  solution: "Solution",
+  unique_value_proposition: "Unique Value Proposition",
+  unfair_advantage: "Unfair Advantage",
   customer_segments: "Customer Segments",
-  value_propositions: "Value Propositions",
-  channels: "Channels",
-  customer_relationships: "Customer Relationships",
-  revenue_streams: "Revenue Streams",
-  key_resources: "Key Resources",
-  key_activities: "Key Activities",
-  key_partners: "Key Partners",
   cost_structure: "Cost Structure",
+  revenue_streams: "Revenue Streams",
+  channels: "Channels",
+  key_metrics: "Key Metrics",
 };
+
+const LEAN_CANVAS_ROWS = [
+  ["problem", "solution", "unique_value_proposition"],
+  ["unfair_advantage", "channels", "customer_segments"],
+  ["cost_structure", "revenue_streams", "key_metrics"],
+];
 
 const STATUS_STYLES: Record<string, string> = {
   untested: "border-gray-600 text-gray-400",
@@ -66,17 +71,17 @@ export default function CanvasPage() {
     load();
   };
 
-  const topRow = ["key_partners", "key_activities", "value_propositions", "customer_relationships", "customer_segments"];
-  const bottomRow = ["cost_structure", "revenue_streams"];
-
-  const renderBlock = (blockId: string, span = 1) => {
+  const renderBlock = (blockId: string) => {
     const block = blocks.find((b) => b.id === blockId);
     if (!block) return null;
     return (
-      <div key={blockId} className={`card flex flex-col gap-2 ${span > 1 ? "col-span-" + span : ""}`} style={span > 1 ? { gridColumn: `span ${span}` } : undefined}>
+      <div key={blockId} className="card flex flex-col gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
           {BLOCK_LABELS[blockId]}
         </h3>
+        {block.content && (
+          <p className="text-xs text-gray-400 whitespace-pre-wrap">{block.content}</p>
+        )}
         <div className="flex-1 space-y-1.5">
           {block.hypotheses.map((h: any) => {
             const Icon = STATUS_ICONS[h.status] || AlertTriangle;
@@ -123,19 +128,15 @@ export default function CanvasPage() {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-gray-800 px-6 py-3">
-        <h1 className="text-lg font-semibold">Business Model Canvas</h1>
+        <h1 className="text-lg font-semibold">Lean Canvas</h1>
         <p className="text-xs text-gray-500 mt-0.5">Click status icons to cycle: untested → testing → validated → invalidated</p>
       </header>
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-5 gap-3 mb-3">
-          {topRow.map((id) => renderBlock(id))}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {bottomRow.map((id) => renderBlock(id))}
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          {["channels"].map((id) => renderBlock(id))}
-        </div>
+      <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        {LEAN_CANVAS_ROWS.map((row, i) => (
+          <div key={i} className="grid grid-cols-3 gap-3">
+            {row.map((id) => renderBlock(id))}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -39,7 +39,8 @@ async def test_reset_chat_leaves_canvas_intact(tmp_path):
     await agent.reset_chat()
 
     blocks = await get_canvas(db)
-    assert blocks[0].content == "Mango tree owners"
+    segments = next(b for b in blocks if b.id == "customer_segments")
+    assert segments.content == "Mango tree owners"
     assert agent.conversation_history == []
     await agent.close()
 

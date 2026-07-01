@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import aiosqlite
 
+from yoak.memory.canvas import LEAN_CANVAS_BLOCKS, migrate_legacy_canvas
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS canvas_blocks (
     id TEXT PRIMARY KEY,
@@ -49,28 +51,17 @@ CREATE TABLE IF NOT EXISTS project_state (
 );
 """
 
-_CANVAS_SEED = [
-    ("customer_segments", "Customer Segments", ""),
-    ("value_propositions", "Value Propositions", ""),
-    ("channels", "Channels", ""),
-    ("customer_relationships", "Customer Relationships", ""),
-    ("revenue_streams", "Revenue Streams", ""),
-    ("key_resources", "Key Resources", ""),
-    ("key_activities", "Key Activities", ""),
-    ("key_partners", "Key Partners", ""),
-    ("cost_structure", "Cost Structure", ""),
-]
-
 
 async def get_db(db_path: str) -> aiosqlite.Connection:
     db = await aiosqlite.connect(db_path)
     db.row_factory = aiosqlite.Row
     await db.executescript(_SCHEMA)
-    for block_id, name, content in _CANVAS_SEED:
+    for block_id, name in LEAN_CANVAS_BLOCKS:
         await db.execute(
             "INSERT OR IGNORE INTO canvas_blocks (id, block_name, content) VALUES (?, ?, ?)",
-            (block_id, name, content),
+            (block_id, name, ""),
         )
+    await migrate_legacy_canvas(db)
     await db.execute(
         "INSERT OR IGNORE INTO project_state (key, value) VALUES (?, ?)",
         ("phase", "discovery"),

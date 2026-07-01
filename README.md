@@ -41,7 +41,7 @@ make init                               # picks up the key, lets you switch
 make                   # start chatting (installs everything on first run)
 make chat              # go straight to chat
 make serve             # start the web dashboard at http://127.0.0.1:8420
-make canvas            # print your Business Model Canvas
+make canvas            # print your Lean Canvas
 make journal           # show your learning journal
 make init              # reconfigure model, project name, etc.
 make help              # show all commands
@@ -105,7 +105,7 @@ The first time you run `make serve`, Yoak builds the dashboard with npm (Node.js
 
 **Steve Blank — Methodology** ([source writing](https://steveblank.com/))
 - Customer Development 4-phase state machine (Discovery → Validation → Creation → Building)
-- Business Model Canvas as a living hypothesis board (9 blocks, each testable)
+- Lean Canvas as a living hypothesis board (9 blocks, each testable)
 - MVP type selection (concierge, wizard of oz, landing page, single-feature, pre-order)
 - Pivot decision framework with 10 pivot types and structured criteria
 - Product/Market Fit measurement (Sean Ellis test, retention curves, LTV/CAC)
@@ -123,7 +123,7 @@ The first time you run `make serve`, Yoak builds the dashboard with npm (Node.js
 
 | Workflow | Steps | What It Does |
 |----------|-------|-------------|
-| **Idea Evaluation** | 5 | PG filters, BMC mapping, riskiest assumption, scoring |
+| **Idea Evaluation** | 5 | PG filters, Lean Canvas mapping, riskiest assumption, scoring |
 | **Customer Discovery** | 5 | Hypothesis review, interview planning, debrief, solution testing, phase gate |
 | **Customer Validation** | 6 | MVP development, earlyvangelist sales, sales roadmap, unit economics, P/M Fit, phase gate |
 | **Pivot Decision** | 5 | Evidence review, signal analysis, diagnosis, pivot type selection, new hypothesis |
@@ -146,7 +146,7 @@ Workflows are state machines — each step injects specific prompts that guide t
 
 All state is stored in a local SQLite database (`~/.yoak/yoak.db`):
 
-- **Business Model Canvas** — 9 blocks (Customer Segments, Value Propositions, Channels, etc.), each containing hypothesis objects
+- **Lean Canvas** — Problem, Solution, Unique Value Proposition, Unfair Advantage, Customer Segments, Cost Structure, Revenue Streams, Channels, Key Metrics
 - **Hypothesis Tracker** — lifecycle management: `untested → testing → validated/invalidated`, with linked evidence entries
 - **Learning Journal** — append-only log with types: learning, pivot, decision, milestone, interview, experiment
 - **Phase Tracker** — which Customer Development phase you're in (discovery, validation, creation, building)
@@ -159,7 +159,7 @@ A dark-mode "war room" at `http://127.0.0.1:8420` with five views:
 
 - **Overview** — Customer Development phase tracker, hypothesis stats (untested/testing/validated/invalidated), active workflow progress, recent activity
 - **Chat** — Streaming conversation with the cofounder agent, workflow phase indicator, suggested starter prompts
-- **Canvas** — Visual 9-block Business Model Canvas with clickable hypothesis cards (click status icons to cycle through states)
+- **Canvas** — Visual 9-block Lean Canvas with clickable hypothesis cards (click status icons to cycle through states)
 - **Journal** — Filterable timeline of learnings, pivots, decisions, experiments with inline creation
 - **Settings** — Model provider configuration (cloud + Ollama), temperature, project name
 
@@ -169,7 +169,7 @@ A dark-mode "war room" at `http://127.0.0.1:8420` with five views:
 yoak chat      — Interactive terminal chat with the cofounder agent
 yoak serve     — Start the API server + dashboard
 yoak init      — First-time setup or reconfigure (project name, model)
-yoak canvas    — Display the current Business Model Canvas
+yoak canvas    — Display the current Lean Canvas
 yoak journal   — Show recent learning journal entries
 yoak config    — Manage configuration (show, set)
 ```
@@ -178,7 +178,7 @@ In **chat mode** (CLI only), slash commands are intercepted before they reach th
 
 | Command | Description |
 |---------|-------------|
-| `/canvas` | Print the current Business Model Canvas |
+| `/canvas` | Print the current Lean Canvas |
 | `/workflow` | Show active workflow, or start one: `/workflow idea_evaluation` |
 | `/advance` | Manually advance the active workflow step |
 | `/phase` | Show current phase, or set it: `/phase validation` |
@@ -269,7 +269,7 @@ When you send a message, Yoak:
 2. **Assembles context** — builds a system prompt from:
    - The master cofounder identity prompt
    - Relevant PG/Blank/Jobs principles (based on your topic)
-   - Your current Business Model Canvas state
+   - Your current Lean Canvas state
    - Recent learning journal entries
    - Active workflow step (if any) with its specific guidance prompt
    - Or the relevant skill prompt (if routed to a skill)
@@ -288,7 +288,7 @@ The API runs on `http://127.0.0.1:8420` with interactive docs at `/docs`.
 | `WS` | `/api/ws/chat` | Streaming chat via WebSocket |
 | `POST` | `/api/chat/reset` | Clear conversation history and active workflow |
 | `GET` | `/api/chat/history` | Get conversation messages |
-| `GET` | `/api/canvas` | Get all 9 BMC blocks with hypotheses |
+| `GET` | `/api/canvas` | Get all 9 Lean Canvas blocks with hypotheses |
 | `PUT` | `/api/canvas/{block_id}` | Update a canvas block |
 | `POST` | `/api/canvas/reset` | Clear canvas blocks and hypotheses |
 | `GET` | `/api/hypotheses` | List hypotheses (filter by block, status) |

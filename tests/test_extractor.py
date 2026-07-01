@@ -55,9 +55,9 @@ def test_parse_response_handles_markdown_wrapped_canvas():
 
 
 def test_parse_response_handles_header_prefixed_tag():
-    text = "### [CANVAS: customer_relationships] Users would share pedigree information to connect."
+    text = "### [CANVAS: channels] Users discover varieties through a shared pedigree map."
     extraction = parse_response(text)
     assert extraction.canvas_updates == [
-        ("customer_relationships", "Users would share pedigree information to connect.")
+        ("channels", "Users discover varieties through a shared pedigree map.")
     ]
     assert "[CANVAS" not in extraction.clean_text

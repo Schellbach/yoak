@@ -1,4 +1,4 @@
-"""Business Model Canvas CRUD endpoints."""
+"""Lean Canvas CRUD endpoints."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Business Model Canvas — 9 hypothesis blocks with persistent state."""
+"""Lean Canvas — 9 hypothesis blocks with persistent state."""
 
 from __future__ import annotations
 
@@ -7,6 +7,30 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import aiosqlite
+
+LEAN_CANVAS_BLOCKS: list[tuple[str, str]] = [
+    ("problem", "Problem"),
+    ("solution", "Solution"),
+    ("unique_value_proposition", "Unique Value Proposition"),
+    ("unfair_advantage", "Unfair Advantage"),
+    ("customer_segments", "Customer Segments"),
+    ("cost_structure", "Cost Structure"),
+    ("revenue_streams", "Revenue Streams"),
+    ("channels", "Channels"),
+    ("key_metrics", "Key Metrics"),
+]
+
+VALID_CANVAS_BLOCK_IDS = frozenset(block_id for block_id, _ in LEAN_CANVAS_BLOCKS)
+
+_BLOCK_ORDER = {block_id: index for index, (block_id, _) in enumerate(LEAN_CANVAS_BLOCKS)}
+
+_LEGACY_BLOCK_MAP = {
+    "value_propositions": "unique_value_proposition",
+    "customer_relationships": "channels",
+    "key_partners": "unfair_advantage",
+    "key_resources": "unfair_advantage",
+    "key_activities": "solution",
+}
 
 
 @dataclass
@@ -25,6 +49,56 @@ class CanvasBlock:
             "updated_at": self.updated_at,
             "hypotheses": self.hypotheses,
         }
+
+
+async def _merge_block_content(
+    db: aiosqlite.Connection, source_id: str, target_id: str
+) -> None:
+    async with db.execute(
+        "SELECT content FROM canvas_blocks WHERE id = ?", (source_id,)
+    ) as cur:
+        row = await cur.fetchone()
+        if not row or not row["content"].strip():
+            return
+    source_content = row["content"].strip()
+    async with db.execute(
+        "SELECT content FROM canvas_blocks WHERE id = ?", (target_id,)
+    ) as cur:
+        target_row = await cur.fetchone()
+    target_content = (target_row["content"] or "").strip() if target_row else ""
+    merged = source_content if not target_content else f"{target_content}\n{source_content}"
+    await db.execute(
+        "UPDATE canvas_blocks SET content = ?, updated_at = datetime('now') WHERE id = ?",
+        (merged, target_id),
+    )
+
+
+async def migrate_legacy_canvas(db: aiosqlite.Connection) -> None:
+    """Migrate Business Model Canvas blocks to Lean Canvas."""
+    for old_id, new_id in _LEGACY_BLOCK_MAP.items():
+        await _merge_block_content(db, old_id, new_id)
+        await db.execute(
+            "UPDATE hypotheses SET canvas_block = ? WHERE canvas_block = ?",
+            (new_id, old_id),
+        )
+
+    valid_ids = tuple(VALID_CANVAS_BLOCK_IDS)
+    placeholders = ",".join("?" * len(valid_ids))
+    await db.execute(
+        f"DELETE FROM canvas_blocks WHERE id NOT IN ({placeholders})",
+        valid_ids,
+    )
+
+    for block_id, name in LEAN_CANVAS_BLOCKS:
+        await db.execute(
+            "INSERT OR IGNORE INTO canvas_blocks (id, block_name, content) VALUES (?, ?, ?)",
+            (block_id, name, ""),
+        )
+        await db.execute(
+            "UPDATE canvas_blocks SET block_name = ? WHERE id = ?",
+            (name, block_id),
+        )
+    await db.commit()
 
 
 async def get_canvas(db: aiosqlite.Connection) -> list[CanvasBlock]:
@@ -54,6 +128,7 @@ async def get_canvas(db: aiosqlite.Connection) -> list[CanvasBlock]:
                         }
                     )
             blocks.append(block)
+    blocks.sort(key=lambda b: _BLOCK_ORDER.get(b.id, 999))
     return blocks
 
 
@@ -74,7 +149,7 @@ async def clear_canvas(db: aiosqlite.Connection) -> None:
 
 def canvas_summary(blocks: list[CanvasBlock]) -> str:
     """Render the canvas as a concise text summary for prompt injection."""
-    lines = ["## Current Business Model Canvas\n"]
+    lines = ["## Current Lean Canvas\n"]
     for b in blocks:
         lines.append(f"### {b.block_name}")
         if b.content:

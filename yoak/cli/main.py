@@ -369,7 +369,7 @@ async def _handle_command(cmd: str, agent):
         await agent.reset_canvas()
         blocks = await get_canvas(await agent.get_db())
         empty = sum(1 for b in blocks if not b.content and not b.hypotheses)
-        console.print(f"[dim]Business Model Canvas reset ({empty}/9 blocks empty).[/dim]")
+        console.print(f"[dim]Lean Canvas reset ({empty}/9 blocks empty).[/dim]")
     elif command == "/reset":
         await agent.reset_all()
         blocks = await get_canvas(await agent.get_db())
@@ -505,7 +505,7 @@ def serve(
 
 @app.command()
 def canvas():
-    """Display the current Business Model Canvas."""
+    """Display the current Lean Canvas."""
     asyncio.run(_show_canvas())
 
 

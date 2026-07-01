@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import aiosqlite
 
-from yoak.memory.canvas import update_block
+from yoak.memory.canvas import VALID_CANVAS_BLOCK_IDS, update_block
 from yoak.memory.hypotheses import create_hypothesis
 from yoak.memory.journal import add_entry
 
@@ -35,19 +35,6 @@ _ARTIFACT_LABEL = re.compile(
     re.IGNORECASE,
 )
 
-_VALID_BLOCKS = {
-    "customer_segments",
-    "value_propositions",
-    "channels",
-    "customer_relationships",
-    "revenue_streams",
-    "key_resources",
-    "key_activities",
-    "key_partners",
-    "cost_structure",
-}
-
-
 @dataclass
 class Extraction:
     canvas_updates: list[tuple[str, str]]
@@ -74,12 +61,12 @@ def _extract_tags(text: str) -> tuple[list[tuple[str, str]], list[tuple[str, str
 
     for match in _CANVAS_RE.finditer(text):
         block_id = match.group(1).lower()
-        if block_id in _VALID_BLOCKS:
+        if block_id in VALID_CANVAS_BLOCK_IDS:
             canvas_updates.append((block_id, match.group(2).strip().strip("*")))
 
     for match in _HYPOTHESIS_RE.finditer(text):
         block_id = match.group(1).lower()
-        if block_id in _VALID_BLOCKS:
+        if block_id in VALID_CANVAS_BLOCK_IDS:
             hypotheses.append((block_id, match.group(2).strip().strip("*")))
 
     for match in _LEARNING_RE.finditer(text):

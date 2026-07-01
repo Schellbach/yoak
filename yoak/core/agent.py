@@ -123,7 +123,7 @@ class Agent:
         db = await self._ensure_db()
         blocks = await get_canvas(db)
         summary = canvas_summary(blocks)
-        return f"Here's your Business Model Canvas:\n\n{summary}"
+        return f"Here's your Lean Canvas:\n\n{summary}"
 
     async def chat(self, user_message: str) -> str:
         """Send a message and get a complete response."""
@@ -210,7 +210,7 @@ class Agent:
         self._reset_chat_state()
 
     async def reset_canvas(self) -> None:
-        """Clear Business Model Canvas blocks and hypotheses."""
+        """Clear Lean Canvas blocks and hypotheses."""
         db = await self._ensure_db()
         await clear_canvas(db)
 

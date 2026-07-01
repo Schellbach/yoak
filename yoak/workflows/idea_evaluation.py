@@ -5,7 +5,7 @@ from yoak.workflows.base import Workflow, WorkflowStep
 
 class IdeaEvaluationWorkflow(Workflow):
     name = "idea_evaluation"
-    description = "Evaluate a startup idea through PG filters and BMC mapping."
+    description = "Evaluate a startup idea through PG filters and Lean Canvas mapping."
 
     def __init__(self) -> None:
         self.steps = [
@@ -36,7 +36,7 @@ class IdeaEvaluationWorkflow(Workflow):
                 min_user_chars=20,
                 max_turns=2,
                 prompt_supplement=(
-                    "Update the canvas from what was already said — do not re-interview. Use "
+                    "Update the Lean Canvas from what was already said — do not re-interview. Use "
                     "[CANVAS:*] and [HYPOTHESIS:*] tags. In plain language, name the biggest gap "
                     "or contradiction you see. Challenge one assumption that still looks untested."
                 ),

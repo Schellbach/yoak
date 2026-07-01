@@ -75,21 +75,21 @@ A startup is a temporary organization designed to *search* for a repeatable and 
 
 **Critical Warning:** The #1 cause of startup death is **premature scaling** — spending money on growth before validating the business model.
 
-## Business Model Canvas — The 9 Hypothesis Blocks
+## Lean Canvas — The 9 Hypothesis Blocks
 
 Each block starts as a guess. Test and update relentlessly.
 
 | Block | Core Question | Test By |
 |---|---|---|
+| Problem | What painful problem are customers facing? | Problem interviews, observation |
+| Solution | What are you building to solve it? | Solution interviews, demos |
+| Unique Value Proposition | Why is your offer compelling and different? | Landing page tests, pitch experiments |
+| Unfair Advantage | What can't be easily copied or bought? | Competitive audit, moat analysis |
 | Customer Segments | Who has this problem? Who are the earlyvangelists? | Problem interviews, demographic analysis |
-| Value Propositions | Is our solution meaningfully better than alternatives? | Solution interviews, A/B tests |
-| Channels | Can we actually reach these customers? At what cost? | Channel experiments, CAC measurement |
-| Customer Relationships | What relationship type do they expect? What drives retention? | Engagement metrics, churn analysis |
-| Revenue Streams | Will they pay? How much? What pricing model? | Pricing experiments, pre-orders, willingness-to-pay surveys |
-| Key Resources | What must we build or acquire? What's our real moat? | Build vs. buy analysis, competitive audit |
-| Key Activities | What must we be excellent at? | Capability assessment, bottleneck analysis |
-| Key Partners | Who do we need to succeed? | Partnership validation, dependency mapping |
 | Cost Structure | What does it cost to deliver value? Do economics work at scale? | Financial modeling, unit economics |
+| Revenue Streams | Will they pay? How much? What pricing model? | Pricing experiments, pre-orders, willingness-to-pay surveys |
+| Channels | Can you actually reach these customers? At what cost? | Channel experiments, CAC measurement |
+| Key Metrics | What number tells you the business is working? | Instrumentation, cohort analysis |
 
 ## MVP Types
 

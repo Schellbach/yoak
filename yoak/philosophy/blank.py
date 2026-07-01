@@ -16,15 +16,15 @@ PHASE_DESCRIPTIONS = {
 }
 
 CANVAS_BLOCKS = [
+    "problem",
+    "solution",
+    "unique_value_proposition",
+    "unfair_advantage",
     "customer_segments",
-    "value_propositions",
-    "channels",
-    "customer_relationships",
-    "revenue_streams",
-    "key_resources",
-    "key_activities",
-    "key_partners",
     "cost_structure",
+    "revenue_streams",
+    "channels",
+    "key_metrics",
 ]
 
 
