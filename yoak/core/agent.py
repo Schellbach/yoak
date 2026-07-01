@@ -11,7 +11,7 @@ from yoak.core.config import Settings
 from yoak.core.extractor import Extraction, apply_extractions, parse_response
 from yoak.core.intents import is_meta_request, wants_canvas_display
 from yoak.core.router import route_message
-from yoak.memory.canvas import canvas_summary, get_canvas
+from yoak.memory.canvas import canvas_summary, clear_canvas, get_canvas
 from yoak.memory.journal import get_phase, get_recent_summary
 from yoak.memory.store import get_db
 from yoak.models.provider import Chunk, Message, complete, stream
@@ -198,11 +198,26 @@ class Agent:
     def conversation_history(self) -> list[dict]:
         return [{"role": m.role, "content": m.content} for m in self._messages]
 
-    def reset_conversation(self) -> None:
+    def _reset_chat_state(self) -> None:
         self._messages = []
         self._active_workflow = None
         self._conversation_id = uuid.uuid4().hex[:12]
         self.last_workflow_event = None
+        self.last_extraction = None
+
+    async def reset_chat(self) -> None:
+        """Clear conversation history and active workflow."""
+        self._reset_chat_state()
+
+    async def reset_canvas(self) -> None:
+        """Clear Business Model Canvas blocks and hypotheses."""
+        db = await self._ensure_db()
+        await clear_canvas(db)
+
+    async def reset_all(self) -> None:
+        """Clear chat and canvas."""
+        self._reset_chat_state()
+        await self.reset_canvas()
 
     async def auto_route(self, user_message: str) -> str | None:
         if self._active_workflow:

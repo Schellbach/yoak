@@ -65,6 +65,13 @@ async def update_block(db: aiosqlite.Connection, block_id: str, content: str) ->
     await db.commit()
 
 
+async def clear_canvas(db: aiosqlite.Connection) -> None:
+    """Reset all canvas block content and remove attached hypotheses."""
+    await db.execute("UPDATE canvas_blocks SET content = '', updated_at = datetime('now')")
+    await db.execute("DELETE FROM hypotheses")
+    await db.commit()
+
+
 def canvas_summary(blocks: list[CanvasBlock]) -> str:
     """Render the canvas as a concise text summary for prompt injection."""
     lines = ["## Current Business Model Canvas\n"]

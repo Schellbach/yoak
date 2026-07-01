@@ -30,3 +30,10 @@ async def update_canvas_block(
     db = await agent.get_db()
     await update_block(db, block_id, body.content)
     return {"status": "ok"}
+
+
+@router.post("/canvas/reset")
+async def reset_canvas(agent: Agent = Depends(get_agent)):
+    await agent.reset_canvas()
+    blocks = await get_canvas(await agent.get_db())
+    return {"status": "ok", "blocks": [b.to_dict() for b in blocks]}

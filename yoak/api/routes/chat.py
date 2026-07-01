@@ -41,8 +41,8 @@ async def chat(req: ChatRequest, agent: Agent = Depends(get_agent)):
 
 
 @router.post("/chat/reset")
-async def reset_chat(agent: Agent = Depends(get_agent)):
-    agent.reset_conversation()
+async def reset_chat_endpoint(agent: Agent = Depends(get_agent)):
+    await agent.reset_chat()
     return {"status": "ok"}
 
 

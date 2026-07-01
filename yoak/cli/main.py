@@ -274,7 +274,7 @@ async def _chat_loop():
         Panel(
             f"[bold]Yoak[/bold] — Cofounder for [cyan]{settings.project_name}[/cyan]\n"
             f"Model: [dim]{model_label}[/dim]\n"
-            "Commands: /canvas  /workflow  /advance  /phase  /reset  /quit",
+            "Commands: /canvas  /workflow  /advance  /phase  /chatreset  /canvasreset  /reset  /quit",
             border_style="blue",
         )
     )
@@ -362,9 +362,15 @@ async def _handle_command(cmd: str, agent):
 
     if command == "/quit":
         raise typer.Exit()
-    elif command == "/reset":
-        agent.reset_conversation()
+    elif command == "/chatreset":
+        await agent.reset_chat()
         console.print("[dim]Conversation reset.[/dim]")
+    elif command == "/canvasreset":
+        await agent.reset_canvas()
+        console.print("[dim]Business Model Canvas reset.[/dim]")
+    elif command == "/reset":
+        await agent.reset_all()
+        console.print("[dim]Conversation and canvas reset.[/dim]")
     elif command == "/workflow":
         if len(parts) > 1:
             name = parts[1]
