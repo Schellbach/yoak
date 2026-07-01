@@ -31,7 +31,7 @@ That's it — one line. It clones the repo, installs everything, and drops you i
 ### Want to use a frontier model?
 
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, GEMINI_API_KEY
+export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, DEEPSEEK_API_KEY, GEMINI_API_KEY, ZHIPUAI_API_KEY
 make init                               # picks up the key, lets you switch
 ```
 
@@ -84,8 +84,8 @@ The first time you run `make serve`, Yoak builds the dashboard with npm (Node.js
 ┌──────────▼──────────┐    ┌──────────────▼───────────────────────┐
 │   MEMORY (SQLite)   │    │         MODEL PROVIDERS              │
 │                     │    │                                       │
-│ Business Model      │    │  LiteLLM (Anthropic, OpenAI, Google, │
-│   Canvas (9 blocks) │    │           Mistral, Cohere, ...)      │
+│ Business Model      │    │  LiteLLM (Anthropic, OpenAI, DeepSeek, │
+│   Canvas (9 blocks) │    │  Google, Zhipu GLM, Mistral, Ollama…)  │
 │ Hypothesis Tracker  │    │  Ollama (llama, mistral, codellama,  │
 │ Learning Journal    │    │          gemma, phi, ...)             │
 │ Pivot History       │    │                                       │
@@ -185,7 +185,9 @@ Yoak defaults to **Ollama** (free, local, private — no API key needed). To upg
 | **Ollama (default)** | `ollama/llama3.1` | `brew install ollama && ollama pull llama3.1` |
 | Anthropic | `anthropic/claude-sonnet-4-20250514` | `export ANTHROPIC_API_KEY=...` |
 | OpenAI | `gpt-4o` | `export OPENAI_API_KEY=...` |
+| DeepSeek | `deepseek/deepseek-chat` | `export DEEPSEEK_API_KEY=...` |
 | Google | `gemini/gemini-2.5-pro` | `export GEMINI_API_KEY=...` |
+| Zhipu (GLM) | `zhipuai/glm-4-flash` | `export ZHIPUAI_API_KEY=...` |
 | Mistral | `mistral/mistral-large-latest` | `export MISTRAL_API_KEY=...` |
 
 Any model supported by [LiteLLM](https://docs.litellm.ai/docs/providers) works. Run `yoak init` to switch models at any time.

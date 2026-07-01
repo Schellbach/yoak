@@ -64,6 +64,17 @@ export const startWorkflow = (name: string) =>
 
 // Config
 export const getConfig = () => request<{ config: any }>("/config");
+export const getModelOptions = () =>
+  request<{
+    cloud_providers: Array<{
+      provider: string;
+      label: string;
+      env_var: string;
+      default_model: string;
+      models: string[];
+    }>;
+    local: { provider: string; models: string[] };
+  }>("/config/models");
 export const setConfig = (key: string, value: any) =>
   request("/config", { method: "PUT", body: JSON.stringify({ key, value }) });
 

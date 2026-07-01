@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { Save } from "lucide-react";
-import { getConfig, setConfig } from "@/api/client";
+import { getConfig, getModelOptions, setConfig } from "@/api/client";
 
 export default function SettingsPage() {
   const [config, setLocalConfig] = useState<any>(null);
+  const [modelOptions, setModelOptions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     getConfig().then((res) => setLocalConfig(res.config));
+    getModelOptions().then((res) => {
+      const cloud = res.cloud_providers.flatMap((p) => p.models);
+      setModelOptions([...cloud, ...res.local.models.map((m) => `ollama/${m}`)]);
+    });
   }, []);
 
   const handleSave = async (key: string, value: any) => {
@@ -37,12 +42,18 @@ export default function SettingsPage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Model</label>
             <input
+              list="yoak-models"
               defaultValue={config.model?.model}
               onBlur={(e) => handleSave("model.model", e.target.value)}
               className="input w-full"
             />
+            <datalist id="yoak-models">
+              {modelOptions.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
             <p className="text-xs text-gray-600 mt-1">
-              e.g., anthropic/claude-sonnet-4-20250514, gpt-4o, gemini/gemini-2.5-pro
+              Cloud: deepseek/deepseek-chat, zhipuai/glm-4-flash, gpt-4o, anthropic/claude-sonnet-4-20250514
             </p>
           </div>
 
@@ -103,10 +114,19 @@ export default function SettingsPage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Model</label>
             <input
+              list="yoak-ollama-models"
               defaultValue={config.ollama?.model}
               onBlur={(e) => handleSave("ollama.model", e.target.value)}
               className="input w-full"
             />
+            <datalist id="yoak-ollama-models">
+              {modelOptions
+                .filter((m) => m.startsWith("ollama/"))
+                .map((m) => m.replace("ollama/", ""))
+                .map((m) => (
+                  <option key={m} value={m} />
+                ))}
+            </datalist>
           </div>
         </div>
 

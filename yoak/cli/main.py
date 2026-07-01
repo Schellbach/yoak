@@ -12,6 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from yoak.core.config import CONFIG_PATH, load_settings, save_settings, update_setting
+from yoak.models.catalog import CLOUD_PROVIDERS, detect_api_key_in_env, provider_env_var
 
 app = typer.Typer(
     name="yoak",
@@ -19,14 +20,6 @@ app = typer.Typer(
     invoke_without_command=True,
 )
 console = Console()
-
-_PROVIDER_KEY = {
-    "anthropic": "ANTHROPIC_API_KEY",
-    "openai": "OPENAI_API_KEY",
-    "google": "GEMINI_API_KEY",
-    "gemini": "GEMINI_API_KEY",
-    "mistral": "MISTRAL_API_KEY",
-}
 
 
 def _ollama_available() -> bool:
@@ -56,14 +49,7 @@ def _ollama_has_model(model: str) -> bool:
 
 def _detect_api_key() -> tuple[str, str, str] | None:
     """Find the first API key in the environment. Returns (model, label, env_var) or None."""
-    for env_var, (model, label) in {
-        "ANTHROPIC_API_KEY": ("anthropic/claude-sonnet-4-20250514", "Anthropic (Claude)"),
-        "OPENAI_API_KEY": ("gpt-4o", "OpenAI (GPT-4o)"),
-        "GEMINI_API_KEY": ("gemini/gemini-2.5-pro", "Google (Gemini)"),
-    }.items():
-        if os.environ.get(env_var):
-            return model, label, env_var
-    return None
+    return detect_api_key_in_env()
 
 
 def _check_model_ready(settings) -> bool:
@@ -87,8 +73,7 @@ def _check_model_ready(settings) -> bool:
         return True
 
     model = settings.model.model
-    provider = model.split("/")[0] if "/" in model else model
-    env_var = _PROVIDER_KEY.get(provider)
+    env_var = provider_env_var(model)
     if env_var and not os.environ.get(env_var):
         console.print(
             Panel(
@@ -240,20 +225,23 @@ def _get_ollama_models() -> list[str]:
 
 def _ask_model_choice(has_ollama: bool = False) -> str | None:
     console.print("\n  Pick a model provider:\n")
-    console.print("    [cyan]1[/cyan]  Anthropic  (Claude)      — export ANTHROPIC_API_KEY=...")
-    console.print("    [cyan]2[/cyan]  OpenAI     (GPT-4o)      — export OPENAI_API_KEY=...")
-    console.print("    [cyan]3[/cyan]  Google     (Gemini)      — export GEMINI_API_KEY=...")
+    choices: dict[str, str | None] = {}
+    for i, provider in enumerate(CLOUD_PROVIDERS, 1):
+        console.print(
+            f"    [cyan]{i}[/cyan]  {provider.label:<22} — export {provider.env_var}=..."
+        )
+        choices[str(i)] = provider.default_model
+    ollama_idx = len(CLOUD_PROVIDERS) + 1
     if has_ollama:
-        console.print("    [cyan]4[/cyan]  Ollama     (local, free)")
+        console.print(f"    [cyan]{ollama_idx}[/cyan]  Ollama (local, free)")
     else:
-        console.print("    [cyan]4[/cyan]  Ollama     (local, free) — install from https://ollama.ai")
-    choice = console.input("\n  Choice [4]: ").strip() or "4"
-    return {
-        "1": "anthropic/claude-sonnet-4-20250514",
-        "2": "gpt-4o",
-        "3": "gemini/gemini-2.5-pro",
-        "4": None,  # Ollama — handled by caller
-    }.get(choice, None)
+        console.print(
+            f"    [cyan]{ollama_idx}[/cyan]  Ollama (local, free) — install from https://ollama.ai"
+        )
+    choices[str(ollama_idx)] = None
+    default = str(ollama_idx)
+    choice = console.input(f"\n  Choice [{default}]: ").strip() or default
+    return choices.get(choice, None)
 
 
 # ── Chat ──────────────────────────────────────────────────────────────
