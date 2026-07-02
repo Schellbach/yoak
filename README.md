@@ -42,7 +42,9 @@ make                   # start chatting (installs everything on first run)
 make chat              # go straight to chat
 make serve             # start the web dashboard at http://127.0.0.1:8420
 make canvas            # print your Lean Canvas
+make hypotheses        # list hypotheses
 make journal           # show your learning journal
+make export ARGS="--vault ~/Obsidian/MyVault"  # one-way Obsidian export
 make init              # reconfigure model, project name, etc.
 make help              # show all commands
 ```
@@ -84,11 +86,12 @@ The first time you run `make serve`, Yoak builds the dashboard with npm (Node.js
 ┌──────────▼──────────┐    ┌──────────────▼───────────────────────┐
 │   MEMORY (SQLite)   │    │         MODEL PROVIDERS              │
 │                     │    │                                       │
-│ Business Model      │    │  LiteLLM (Anthropic, OpenAI, DeepSeek, │
-│   Canvas (9 blocks) │    │  Google, Zhipu GLM, Mistral, Ollama…)  │
+│ Lean Canvas         │    │  LiteLLM (Anthropic, OpenAI, DeepSeek, │
+│   (9 blocks)        │    │  Google, Zhipu GLM, Mistral, Ollama…)  │
 │ Hypothesis Tracker  │    │  Ollama (llama, mistral, codellama,  │
-│ Learning Journal    │    │          gemma, phi, ...)             │
-│ Pivot History       │    │                                       │
+│   + status history  │    │          gemma, phi, ...)             │
+│ Learning Journal    │    │                                       │
+│   (incl. pivots)    │    │                                       │
 └─────────────────────┘    └──────────────────────────────────────┘
 ```
 
@@ -147,7 +150,7 @@ Workflows are state machines — each step injects specific prompts that guide t
 All state is stored in a local SQLite database (`~/.yoak/yoak.db`):
 
 - **Lean Canvas** — Problem, Solution, Unique Value Proposition, Unfair Advantage, Customer Segments, Cost Structure, Revenue Streams, Channels, Key Metrics
-- **Hypothesis Tracker** — lifecycle management: `untested → testing → validated/invalidated`, with linked evidence entries
+- **Hypothesis Tracker** — lifecycle management: `untested → testing → validated/invalidated`, with linked evidence entries and status history
 - **Learning Journal** — append-only log with types: learning, pivot, decision, milestone, interview, experiment
 - **Phase Tracker** — which Customer Development phase you're in (discovery, validation, creation, building)
 
@@ -155,11 +158,12 @@ Memory context is injected into every conversation turn, so the agent always kno
 
 ### Dashboard (Web UI)
 
-A dark-mode "war room" at `http://127.0.0.1:8420` with five views:
+Start with `make serve` or `yoak serve`. The war room runs at `http://127.0.0.1:8420` with six views:
 
 - **Overview** — Customer Development phase tracker, hypothesis stats (untested/testing/validated/invalidated), active workflow progress, recent activity
 - **Chat** — Streaming conversation with the cofounder agent, workflow phase indicator, suggested starter prompts
-- **Canvas** — Visual 9-block Lean Canvas with clickable hypothesis cards (click status icons to cycle through states)
+- **Canvas** — Visual 9-block Lean Canvas with inline editing, version snapshots, compare mode, and per-block hypotheses
+- **Hypotheses** — Full list of testable beliefs with status filters, evidence, and links back to canvas blocks
 - **Journal** — Filterable timeline of learnings, pivots, decisions, experiments with inline creation
 - **Settings** — Model provider configuration (cloud + Ollama), temperature, project name
 
@@ -259,9 +263,13 @@ yoak/
 │   │   └── synthesis.py        # Combined context builder + intent detection
 │   ├── memory/
 │   │   ├── store.py            # SQLite schema + connection management
-│   │   ├── canvas.py           # Business Model Canvas CRUD + summary renderer
-│   │   ├── hypotheses.py       # Hypothesis lifecycle + evidence tracking
+│   │   ├── canvas.py           # Lean Canvas CRUD + summary renderer
+│   │   ├── hypotheses.py       # Hypothesis lifecycle, evidence, status history
 │   │   └── journal.py          # Learning journal + phase management
+│   ├── export/
+│   │   ├── runner.py           # One-way Obsidian vault export orchestration
+│   │   ├── writers.py          # Markdown note builders (canvas, hypotheses, journal, pivots)
+│   │   └── canvas.py           # JSON Canvas file for Obsidian
 │   ├── workflows/
 │   │   ├── base.py             # Base workflow state machine
 │   │   ├── idea_evaluation.py  # 5-step PG-inspired idea scoring
@@ -290,7 +298,7 @@ yoak/
     └── src/
         ├── App.tsx             # Router + icon sidebar
         ├── api/client.ts       # Full API client + WebSocket
-        └── pages/              # Overview, Chat, Canvas, Journal, Settings
+        └── pages/              # Overview, Chat, Canvas, Hypotheses, Journal, Settings
 ```
 
 ## How It Works
@@ -345,6 +353,9 @@ The API runs on `http://127.0.0.1:8420` with interactive docs at `/docs`.
 # Install with dev dependencies
 pip install -e ".[dev]"
 
+# Run tests
+pytest
+
 # Run the linter
 ruff check yoak/
 
@@ -369,6 +380,9 @@ ollama:
 server:
   host: 127.0.0.1
   port: 8420
+export:
+  vault_path: null          # saved after first successful yoak export
+  project_slug: null        # defaults to slugified project_name
 project_name: My Startup
 ```
 
