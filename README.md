@@ -1,6 +1,6 @@
 # Yoak — Agentic Cofounder
 
-An AI cofounder harness that thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs.
+Yoak is an AI cofounder agent that thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs who exists to help you search for a repeatable business without fooling yourself.
 
 Yoak wraps frontier LLMs (cloud and local) with structured startup methodology — prompts, persistent memory, workflows, and skills — so you can run your startup like a lean team from day one.
 
