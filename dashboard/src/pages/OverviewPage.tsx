@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Search,
   CheckCircle,
@@ -85,7 +86,7 @@ export default function OverviewPage() {
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="card">
+          <Link to="/hypotheses" className="card block transition hover:opacity-90">
             <h2 className="mb-3 font-serif text-sm" style={{ color: "var(--muted)" }}>Hypotheses</h2>
             <div className="mb-3 font-serif text-3xl" style={{ color: "var(--ink)" }}>{total}</div>
             <div className="space-y-2">
@@ -94,7 +95,8 @@ export default function OverviewPage() {
               <StatBar label="Validated" count={hypothesisCounts.validated} total={total} color="var(--moss)" />
               <StatBar label="Invalidated" count={hypothesisCounts.invalidated} total={total} color="var(--rust)" />
             </div>
-          </div>
+            <p className="mt-3 text-xs" style={{ color: "var(--moss)" }}>View all →</p>
+          </Link>
 
           <div className="card">
             <h2 className="mb-3 font-serif text-sm" style={{ color: "var(--muted)" }}>Active Workflow</h2>

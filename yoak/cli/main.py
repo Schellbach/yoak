@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import os
+from datetime import date
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -199,7 +201,9 @@ def _run_init():
             f"Project: [cyan]{project}[/cyan]\n"
             f"Model:   [cyan]{display_model}[/cyan]\n"
             f"Config:  [dim]{CONFIG_PATH}[/dim]\n\n"
-            f"Run [green]yoak[/green] to start chatting with your cofounder.",
+            f"Run [green]yoak[/green] to start chatting with your cofounder.\n"
+            f"Web dashboard: [green]yoak serve[/green] → http://127.0.0.1:8420\n"
+            f"Obsidian export: [green]yoak export --vault <path>[/green]",
             border_style="green",
         )
     )
@@ -274,7 +278,8 @@ async def _chat_loop():
         Panel(
             f"[bold]Yoak[/bold] — Cofounder for [cyan]{settings.project_name}[/cyan]\n"
             f"Model: [dim]{model_label}[/dim]\n"
-            "Commands: /canvas  /workflow  /advance  /phase  /chatreset  /canvasreset  /reset  /quit",
+            "Commands: /canvas  /workflow  /advance  /phase  /chatreset  /canvasreset  /reset  /quit\n"
+            "[dim]Web UI: yoak serve → http://127.0.0.1:8420  |  Export: yoak export --vault <path>[/dim]",
             border_style="blue",
         )
     )
@@ -499,6 +504,120 @@ def serve(
 ):
     """Start the Yoak API server and dashboard."""
     _run_serve(host, port)
+
+
+# ── Export ────────────────────────────────────────────────────────────
+
+@app.command("export")
+def export_cmd(
+    vault: Path | None = typer.Option(None, "--vault", help="Obsidian vault root path"),
+    project: str | None = typer.Option(
+        None,
+        "--project",
+        help="Project slug for <vault>/yoak/<project>/ (defaults to configured project name)",
+    ),
+    force: bool = typer.Option(False, "--force", help="Regenerate without confirmation"),
+):
+    """Export Yoak memory to an Obsidian vault (one-way, DB is source of truth)."""
+    asyncio.run(_run_export(vault, project, force))
+
+
+async def _run_export(vault: Path | None, project: str | None, force: bool):
+    from yoak.export.filenames import project_slug
+    from yoak.export.runner import export_to_vault
+    from yoak.memory.store import get_db
+
+    settings = load_settings()
+    vault_path = vault or (Path(settings.export.vault_path) if settings.export.vault_path else None)
+    if vault_path is None:
+        console.print("[red]No vault path configured. Pass --vault or run a successful export first.[/red]")
+        raise typer.Exit(1)
+
+    project_name = settings.project_name
+    project_id = project_slug(project) if project else (
+        settings.export.project_slug or project_slug(project_name)
+    )
+    exported = date.today().isoformat()
+
+    db = await get_db(settings.db_path)
+    try:
+        try:
+            result = await export_to_vault(
+                db,
+                vault_path,
+                project_name=project_name,
+                project_id=project_id,
+                exported=exported,
+                force=force,
+            )
+        except FileExistsError as exc:
+            if force or typer.confirm(f"{exc}\nProceed anyway?"):
+                result = await export_to_vault(
+                    db,
+                    vault_path,
+                    project_name=project_name,
+                    project_id=project_id,
+                    exported=exported,
+                    force=True,
+                )
+            else:
+                raise typer.Exit() from exc
+    finally:
+        await db.close()
+
+    settings.export.vault_path = str(vault_path.expanduser().resolve())
+    settings.export.project_slug = project_id
+    save_settings(settings)
+
+    console.print(
+        Panel(
+            f"[green bold]Export complete[/green bold]\n\n"
+            f"Vault:   [cyan]{result.output_dir.parent.parent}[/cyan]\n"
+            f"Project: [cyan]{project_id}[/cyan]\n"
+            f"Output:  [cyan]{result.output_dir}[/cyan]\n"
+            f"Files:   {len(result.files_written)} written",
+            border_style="green",
+        )
+    )
+    for warning in result.warnings:
+        console.print(f"[yellow]{warning}[/yellow]")
+    for deleted in result.files_deleted:
+        console.print(f"[dim]Removed stale: {deleted}[/dim]")
+
+
+# ── Hypotheses ────────────────────────────────────────────────────────
+
+@app.command()
+def hypotheses(
+    canvas_block: str = typer.Option(None, "--block", help="Filter by canvas block"),
+    status: str = typer.Option(None, help="Filter: untested, testing, validated, invalidated"),
+):
+    """List hypotheses linked to the Lean Canvas."""
+    asyncio.run(_show_hypotheses(canvas_block, status))
+
+
+async def _show_hypotheses(canvas_block: str | None, status: str | None):
+    from yoak.memory.canvas import LEAN_CANVAS_BLOCKS
+    from yoak.memory.hypotheses import list_hypotheses
+    from yoak.memory.store import get_db
+
+    settings = load_settings()
+    db = await get_db(settings.db_path)
+    results = await list_hypotheses(db, canvas_block=canvas_block, status=status)
+    if not results:
+        console.print("[dim]No hypotheses yet.[/dim]")
+    else:
+        block_names = dict(LEAN_CANVAS_BLOCKS)
+        table = Table(title="Hypotheses")
+        table.add_column("Block", style="cyan", width=18)
+        table.add_column("Status", width=12)
+        table.add_column("Statement")
+        table.add_column("Conf.", justify="right", width=6)
+        for h in results:
+            block = block_names.get(h.canvas_block, h.canvas_block.replace("_", " "))
+            table.add_row(block, h.status, h.statement, f"{h.confidence:.0%}")
+        console.print(table)
+    await db.close()
 
 
 # ── Canvas ────────────────────────────────────────────────────────────

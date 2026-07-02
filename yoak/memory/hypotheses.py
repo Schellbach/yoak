@@ -10,6 +10,49 @@ from typing import Any
 import aiosqlite
 
 
+async def _record_status_history(
+    db: aiosqlite.Connection, hypothesis_id: str, status: str, *, changed_at: str | None = None
+) -> None:
+    hid = uuid.uuid4().hex[:12]
+    if changed_at:
+        await db.execute(
+            "INSERT INTO hypothesis_status_history (id, hypothesis_id, status, changed_at) VALUES (?, ?, ?, ?)",
+            (hid, hypothesis_id, status, changed_at),
+        )
+    else:
+        await db.execute(
+            "INSERT INTO hypothesis_status_history (id, hypothesis_id, status) VALUES (?, ?, ?)",
+            (hid, hypothesis_id, status),
+        )
+
+
+async def ensure_hypothesis_history_backfill(db: aiosqlite.Connection) -> None:
+    """Seed history rows for hypotheses that predate the history table."""
+    async with db.execute("SELECT id, status, created_at FROM hypotheses") as cur:
+        rows = await cur.fetchall()
+    for row in rows:
+        async with db.execute(
+            "SELECT 1 FROM hypothesis_status_history WHERE hypothesis_id = ? LIMIT 1",
+            (row["id"],),
+        ) as cur:
+            if await cur.fetchone():
+                continue
+        await _record_status_history(db, row["id"], row["status"], changed_at=row["created_at"])
+    await db.commit()
+
+
+async def list_status_history(db: aiosqlite.Connection, hypothesis_id: str) -> list[dict[str, str]]:
+    results: list[dict[str, str]] = []
+    async with db.execute(
+        "SELECT status, changed_at FROM hypothesis_status_history "
+        "WHERE hypothesis_id = ? ORDER BY changed_at ASC, id ASC",
+        (hypothesis_id,),
+    ) as cur:
+        async for row in cur:
+            results.append({"status": row["status"], "changed_at": row["changed_at"]})
+    return results
+
+
 @dataclass
 class Hypothesis:
     id: str
@@ -47,6 +90,7 @@ async def create_hypothesis(
            VALUES (?, ?, ?, ?, ?, ?)""",
         (hid, canvas_block, statement, status, confidence, "[]"),
     )
+    await _record_status_history(db, hid, status)
     await db.commit()
     return hid
 
@@ -71,12 +115,21 @@ async def update_hypothesis(
         params.append(statement)
     if not parts:
         return
+    previous = None
+    if status is not None:
+        async with db.execute(
+            "SELECT status FROM hypotheses WHERE id = ?", (hypothesis_id,)
+        ) as cur:
+            row = await cur.fetchone()
+            previous = row["status"] if row else None
     parts.append("updated_at = datetime('now')")
     params.append(hypothesis_id)
     await db.execute(
         f"UPDATE hypotheses SET {', '.join(parts)} WHERE id = ?",
         params,
     )
+    if status is not None and previous != status:
+        await _record_status_history(db, hypothesis_id, status)
     await db.commit()
 
 

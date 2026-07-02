@@ -5,9 +5,11 @@ import {
   BookOpen,
   BarChart3,
   Settings,
+  ListChecks,
 } from "lucide-react";
 import ChatPage from "./pages/ChatPage";
 import CanvasPage from "./pages/CanvasPage";
+import HypothesesPage from "./pages/HypothesesPage";
 import JournalPage from "./pages/JournalPage";
 import OverviewPage from "./pages/OverviewPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -17,6 +19,7 @@ const navItems = [
   { to: "/overview", icon: BarChart3, label: "Overview" },
   { to: "/chat", icon: MessageSquare, label: "Chat" },
   { to: "/canvas", icon: LayoutGrid, label: "Canvas" },
+  { to: "/hypotheses", icon: ListChecks, label: "Hypotheses" },
   { to: "/journal", icon: BookOpen, label: "Journal" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
@@ -57,6 +60,7 @@ export default function App() {
             <Route path="/overview" element={<OverviewPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/canvas" element={<CanvasPage />} />
+            <Route path="/hypotheses" element={<HypothesesPage />} />
             <Route path="/journal" element={<JournalPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>

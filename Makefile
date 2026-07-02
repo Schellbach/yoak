@@ -12,13 +12,19 @@ serve:              ## Start the web dashboard
 init:               ## Reconfigure model, project name
 	@bash yoak.sh init
 
-canvas:             ## Print your Business Model Canvas
+canvas:             ## Print your Lean Canvas
 	@bash yoak.sh canvas
+
+hypotheses:         ## List Lean Canvas hypotheses
+	@bash yoak.sh hypotheses
 
 journal:            ## Show your learning journal
 	@bash yoak.sh journal
 
+export:             ## Export memory to an Obsidian vault
+	@bash yoak.sh export $(ARGS)
+
 help:               ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
 
-.PHONY: run chat serve init canvas journal help
+.PHONY: run chat serve init canvas hypotheses journal export help

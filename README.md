@@ -170,7 +170,9 @@ yoak chat      — Interactive terminal chat with the cofounder agent
 yoak serve     — Start the API server + dashboard
 yoak init      — First-time setup or reconfigure (project name, model)
 yoak canvas    — Display the current Lean Canvas
+yoak hypotheses — List hypotheses linked to the Lean Canvas
 yoak journal   — Show recent learning journal entries
+yoak export    — Export memory to an Obsidian vault (one-way)
 yoak config    — Manage configuration (show, set)
 ```
 
@@ -189,6 +191,36 @@ In **chat mode** (CLI only), slash commands are intercepted before they reach th
 | `/quit` | Exit chat |
 
 The dashboard uses buttons and API calls instead of slash commands. In chat, you can also ask naturally (e.g. *“show the canvas”*) — that is handled by the agent, not the slash-command router.
+
+### Obsidian export (one-way)
+
+Export Yoak's SQLite memory (Lean Canvas, hypotheses, evidence, journal, pivots) into an Obsidian vault as markdown plus a JSON Canvas file. **Direction is DB → vault only.** The vault output is generated and disposable; Yoak never reads it back.
+
+```bash
+yoak export --vault ~/Obsidian/MyVault
+yoak export                              # uses saved vault path from config
+yoak export --project mango-trees        # output under <vault>/yoak/mango-trees/
+yoak export --force                      # regenerate without confirmation
+```
+
+Output layout:
+
+```
+<vault>/yoak/<project-slug>/
+  Dashboard.md
+  <project-slug>.canvas
+  canvas/01 Problem.md … 09 Key Metrics.md
+  hypotheses/H-<id>-<slug>.md
+  journal/YYYY-MM-DD.md
+  pivots/P-<id>-<slug>.md
+```
+
+Rules:
+
+- Files Yoak writes include `yoak_managed: true` in frontmatter.
+- Yoak skips any existing file that is **not** yoak-managed (prints a warning).
+- Re-export deletes stale yoak-managed hypothesis/pivot/journal files whose IDs or dates no longer exist in the DB.
+- Hypothesis status history is tracked in SQLite and exported under `## History`.
 
 ## Model Support
 

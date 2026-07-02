@@ -55,6 +55,10 @@ export const LEAN_CANVAS_FIELDS = [
   },
 ] as const;
 
+export function blockLabel(blockId: string): string {
+  return LEAN_CANVAS_FIELDS.find((f) => f.id === blockId)?.label ?? blockId.replace(/_/g, " ");
+}
+
 export type CanvasBlockId = (typeof LEAN_CANVAS_FIELDS)[number]["id"];
 
 export type BlockMap = Record<string, string>;

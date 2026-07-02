@@ -35,10 +35,16 @@ class ServerConfig(BaseModel):
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
 
 
+class ExportConfig(BaseModel):
+    vault_path: str | None = None
+    project_slug: str | None = None
+
+
 class Settings(BaseSettings):
     model: ModelConfig = Field(default_factory=ModelConfig)
     ollama: OllamaConfig = Field(default_factory=OllamaConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
+    export: ExportConfig = Field(default_factory=ExportConfig)
     db_path: str = str(DB_PATH)
     project_name: str = "My Startup"
 

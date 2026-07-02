@@ -49,6 +49,13 @@ CREATE TABLE IF NOT EXISTS project_state (
     value TEXT NOT NULL,
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS hypothesis_status_history (
+    id TEXT PRIMARY KEY,
+    hypothesis_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    changed_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 
@@ -62,6 +69,9 @@ async def get_db(db_path: str) -> aiosqlite.Connection:
             (block_id, name, ""),
         )
     await migrate_legacy_canvas(db)
+    from yoak.memory.hypotheses import ensure_hypothesis_history_backfill
+
+    await ensure_hypothesis_history_backfill(db)
     await db.execute(
         "INSERT OR IGNORE INTO project_state (key, value) VALUES (?, ?)",
         ("phase", "discovery"),
