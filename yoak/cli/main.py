@@ -116,15 +116,16 @@ def _run_init():
     """Interactive configuration (project name, model)."""
     console.print(
         Panel(
-            "[bold]Welcome to Yoak[/bold] — Your AI Cofounder\n\n"
-            "Let's get you set up. This takes about 30 seconds.",
+            "[bold]Welcome to Yoak[/bold] — your AI cofounder\n\n"
+            "Yoak is the tool. On the next prompt, name [italic]your[/italic] startup — not \"Yoak\".\n"
+            "This takes about 30 seconds.",
             border_style="blue",
         )
     )
 
     # 1. Project name
     project = console.input(
-        "\n[bold]What's your startup called?[/bold] (press Enter to skip): "
+        "\n[bold]What's your startup called?[/bold] (press Enter for \"My Startup\"): "
     ).strip() or "My Startup"
 
     # 2. Detect what's available and pick the best default
@@ -248,6 +249,49 @@ def _ask_model_choice(has_ollama: bool = False) -> str | None:
     return choices.get(choice, None)
 
 
+async def _confirm_startup(settings, agent) -> None:
+    """Confirm the active startup and offer rename or a fresh start."""
+    console.print(
+        Panel(
+            f"[bold]Welcome back.[/bold] You're working on [cyan]{settings.project_name}[/cyan].\n\n"
+            "[dim]Press Enter[/dim] to continue with this startup\n"
+            "[dim]Type a name[/dim] to switch startups (keeps your canvas and journal)\n"
+            "[dim]Type[/dim] [green]new[/green] [dim]to start a fresh startup (clears chat, canvas, and journal)[/dim]",
+            title="Startup",
+            border_style="blue",
+        )
+    )
+
+    try:
+        choice = console.input(
+            f'Continue with "{settings.project_name}" [Enter / name / new]: '
+        ).strip()
+    except (EOFError, KeyboardInterrupt):
+        console.print()
+        return
+
+    if not choice:
+        return
+
+    if choice.lower() in {"new", "fresh", "start"}:
+        try:
+            name = console.input("\nWhat's your new startup called? ").strip() or "My Startup"
+        except (EOFError, KeyboardInterrupt):
+            console.print()
+            return
+        settings.project_name = name
+        save_settings(settings)
+        agent.settings = settings
+        await agent.reset_all()
+        console.print(f"[green]Fresh start for {name}.[/green]\n")
+        return
+
+    settings.project_name = choice
+    save_settings(settings)
+    agent.settings = settings
+    console.print(f"[green]Switched to {choice}.[/green]\n")
+
+
 # ── Chat ──────────────────────────────────────────────────────────────
 
 @app.command()
@@ -270,13 +314,17 @@ async def _chat_loop():
     agent = Agent(settings)
     db = await agent.get_db()
 
+    await _confirm_startup(settings, agent)
+    settings = agent.settings
+
     model_label = settings.model.model
     if settings.ollama.enabled:
         model_label = f"{settings.ollama.model} (local)"
 
     console.print(
         Panel(
-            f"[bold]Yoak[/bold] — Cofounder for [cyan]{settings.project_name}[/cyan]\n"
+            f"[bold]Yoak[/bold] — AI cofounder\n"
+            f"Startup: [cyan]{settings.project_name}[/cyan]\n"
             f"Model: [dim]{model_label}[/dim]\n"
             "Commands: /canvas  /workflow  /advance  /phase  /chatreset  /canvasreset  /reset  /quit\n"
             "[dim]Web UI: yoak serve → http://127.0.0.1:8420  |  Export: yoak export --vault <path>[/dim]",
