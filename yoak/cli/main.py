@@ -250,46 +250,45 @@ def _ask_model_choice(has_ollama: bool = False) -> str | None:
 
 
 async def _confirm_startup(settings, agent) -> None:
-    """Confirm the active startup and offer rename or a fresh start."""
+    """Confirm the active startup and offer rename."""
+    startup = settings.project_name
     console.print(
         Panel(
-            f"[bold]Welcome back.[/bold] You're working on [cyan]{settings.project_name}[/cyan].\n\n"
-            "[dim]Press Enter[/dim] to continue with this startup\n"
-            "[dim]Type a name[/dim] to switch startups (keeps your canvas and journal)\n"
-            "[dim]Type[/dim] [green]new[/green] [dim]to start a fresh startup (clears chat, canvas, and journal)[/dim]",
-            title="Startup",
+            f"Current startup: [cyan]{startup}[/cyan]\n\n"
+            "• [bold]Enter[/bold] — keep working on this startup\n"
+            "• [bold]Type a name[/bold] — switch to a different startup\n\n"
+            "[dim]To wipe chat, canvas, and journal, use /reset in chat.[/dim]",
+            title="Welcome back",
             border_style="blue",
         )
     )
 
     try:
-        choice = console.input(
-            f'Continue with "{settings.project_name}" [Enter / name / new]: '
-        ).strip()
+        choice = console.input("\nPress Enter to continue, or type a startup name: ").strip()
     except (EOFError, KeyboardInterrupt):
         console.print()
         return
 
-    if not choice:
+    if not choice or choice == startup:
         return
 
-    if choice.lower() in {"new", "fresh", "start"}:
-        try:
-            name = console.input("\nWhat's your new startup called? ").strip() or "My Startup"
-        except (EOFError, KeyboardInterrupt):
-            console.print()
-            return
-        settings.project_name = name
-        save_settings(settings)
-        agent.settings = settings
-        await agent.reset_all()
-        console.print(f"[green]Fresh start for {name}.[/green]\n")
+    try:
+        clear = console.input(
+            f'Switch to "{choice}" and clear existing work (chat, canvas, journal)? [y/N]: '
+        ).strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        console.print()
         return
 
     settings.project_name = choice
     save_settings(settings)
     agent.settings = settings
-    console.print(f"[green]Switched to {choice}.[/green]\n")
+
+    if clear in {"y", "yes"}:
+        await agent.reset_all()
+        console.print(f"[green]Switched to {choice} with a fresh start.[/green]\n")
+    else:
+        console.print(f"[green]Switched to {choice}.[/green]\n")
 
 
 # ── Chat ──────────────────────────────────────────────────────────────
