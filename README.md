@@ -1,14 +1,30 @@
-# Yoak — Agentic Cofounder
+# Yoak — AI Cofounder Agent
 
-Yoak is an AI cofounder agent that thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs who exists to help you search for a repeatable business without fooling yourself.
+**Yoak is your AI cofounder agent** — the thing you talk to when you're searching for a repeatable business. It thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs. It asks the hard questions, tracks what you've actually validated, and won't let you confuse hope for evidence.
 
-Yoak wraps frontier LLMs (cloud and local) with structured startup methodology — prompts, persistent memory, workflows, and skills — so you can run your startup like a lean team from day one.
+Yoak is **not a frontier model**. It's a **cofounder harness** around the model you choose (Ollama locally by default, or Claude/GPT/DeepSeek via API). The harness is what makes it Yoak:
+
+- **Persistent memory** — Lean Canvas, hypotheses, learning journal
+- **Structured workflows** — idea evaluation, customer discovery, validation, pivot decisions
+- **Encoded methodology** — PG instincts + Blank Customer Development + Jobs taste
+- **Interfaces** — terminal chat, web dashboard, Obsidian export
+
+You interact with one agent named Yoak. Under the hood, an orchestrator assembles context from your startup's state, calls your configured LLM, and writes what you learn back to SQLite.
+
+### Yoak vs a chat wrapper
+
+| Generic LLM chat | Yoak |
+|------------------|------|
+| Forgets your canvas between sessions | Remembers canvas, hypotheses, and journal |
+| Gives encouraging advice | Pushback-focused cofounder persona |
+| No structured phases | Customer Development workflows with steps |
+| You manage the process | Agent routes to workflows and skills automatically |
 
 ## Why Yoak?
 
 Every startup begins with untested assumptions. Most founders execute instead of learning — building features nobody wants, scaling before finding fit, ignoring the hard questions.
 
-Yoak encodes three complementary worldviews as the agent's operating system:
+Yoak encodes three complementary worldviews as the cofounder agent's operating system:
 
 | Layer | Thinker | Role in Yoak |
 |-------|---------|--------------|
@@ -26,7 +42,7 @@ Copy and paste this into your terminal:
 git clone https://github.com/Schellbach/yoak.git && cd yoak && make
 ```
 
-That's it — one line. It clones the repo, installs everything, and drops you into a conversation with your AI cofounder. No API key needed. First run takes about a minute; every run after is instant.
+That's it — one line. It clones the repo, installs everything, and drops you into a conversation with your cofounder agent. The web dashboard starts in the background. No API key needed. First run takes about a minute; every run after is instant.
 
 ### Want to use a frontier model?
 
@@ -58,6 +74,8 @@ The first time you run `make` or `make chat`, Yoak builds the dashboard with npm
 
 ## Architecture
 
+Yoak is a **cofounder agent harness**: interfaces and orchestration on top, swappable LLM on the bottom, startup memory in the middle.
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         INTERFACES                              │
@@ -70,7 +88,7 @@ The first time you run `make` or `make chat`, Yoak builds the dashboard with npm
 └──────────────────────────┬──────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────────┐
-│                      CORE ENGINE                                │
+│                      YOAK AGENT HARNESS                         │
 │                                                                 │
 │   Agent Orchestrator ─── assembles system prompt from:          │
 │     ├─ Philosophy Engine (PG + Blank + Jobs)                    │
@@ -84,15 +102,15 @@ The first time you run `make` or `make chat`, Yoak builds the dashboard with npm
 └──────────┬──────────────────────────────┬───────────────────────┘
            │                              │
 ┌──────────▼──────────┐    ┌──────────────▼───────────────────────┐
-│   MEMORY (SQLite)   │    │         MODEL PROVIDERS              │
-│                     │    │                                       │
-│ Lean Canvas         │    │  LiteLLM (Anthropic, OpenAI, DeepSeek, │
-│   (9 blocks)        │    │  Google, Zhipu GLM, Mistral, Ollama…)  │
-│ Hypothesis Tracker  │    │  Ollama (llama, mistral, codellama,  │
-│   + status history  │    │          gemma, phi, ...)             │
-│ Learning Journal    │    │                                       │
-│   (incl. pivots)    │    │                                       │
-└─────────────────────┘    └──────────────────────────────────────┘
+│   MEMORY (SQLite)   │    │   MODEL LAYER (swappable)          │
+│                     │    │                                    │
+│ Lean Canvas         │    │  LiteLLM (Anthropic, OpenAI,       │
+│   (9 blocks)        │    │    DeepSeek, Google, Zhipu, …)     │
+│ Hypothesis Tracker  │    │  Ollama (llama, mistral,           │
+│   + status history  │    │    codellama, gemma, phi, …)       │
+│ Learning Journal    │    │                                    │
+│   (incl. pivots)    │    │  Not part of Yoak — you choose     │
+└─────────────────────┘    └────────────────────────────────────┘
 ```
 
 ## Features
@@ -303,7 +321,7 @@ yoak/
 
 ## How It Works
 
-When you send a message, Yoak:
+When you send a message to the cofounder agent, Yoak:
 
 1. **Detects intent** — maps your message to a workflow (multi-step) or skill (single-turn)
 2. **Assembles context** — builds a system prompt from:
@@ -313,10 +331,11 @@ When you send a message, Yoak:
    - Recent learning journal entries
    - Active workflow step (if any) with its specific guidance prompt
    - Or the relevant skill prompt (if routed to a skill)
-3. **Calls the model** — sends the assembled messages to your configured LLM
+3. **Calls your model** — sends the assembled messages to the LLM you configured (not baked into Yoak)
 4. **Streams the response** — via WebSocket (dashboard) or terminal (CLI)
+5. **Persists what matters** — canvas updates, hypotheses, and journal entries land in SQLite
 
-The agent's persona is consistent across all interactions: direct, honest, occasionally uncomfortable — like a great cofounder who asks the hard questions.
+The cofounder persona is consistent across all interactions: direct, honest, occasionally uncomfortable — like a great cofounder who asks the hard questions.
 
 ## API Reference
 
@@ -365,7 +384,7 @@ cd dashboard && npm run dev
 
 ## Configuration
 
-Yoak stores configuration in `~/.yoak/config.yaml` (override with `YOAK_DIR` env var).
+Yoak stores configuration in `~/.yoak/config.yaml` (override with `YOAK_DIR` env var). `project_name` is **your startup's name** — not "yoak" (Yoak is always the agent; your startup is what you're building).
 
 ```yaml
 model:
