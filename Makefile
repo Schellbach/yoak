@@ -1,12 +1,12 @@
 .DEFAULT_GOAL := run
 
-run:                ## Start Yoak (installs everything on first run)
+run:                ## Start Yoak chat (web UI starts in background)
 	@bash yoak.sh $(ARGS)
 
-chat:               ## Chat with your cofounder
+chat:               ## Chat with your cofounder (web UI starts in background)
 	@bash yoak.sh chat
 
-serve:              ## Start the web dashboard
+serve:              ## Start only the web dashboard (foreground)
 	@bash yoak.sh serve
 
 init:               ## Reconfigure model, project name

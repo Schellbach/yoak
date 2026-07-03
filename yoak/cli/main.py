@@ -106,8 +106,7 @@ def default(ctx: typer.Context):
         return
     if _needs_init():
         _run_init()
-    else:
-        asyncio.run(_chat_loop())
+    asyncio.run(_chat_loop())
 
 
 # ── Init ──────────────────────────────────────────────────────────────
@@ -202,8 +201,8 @@ def _run_init():
             f"Project: [cyan]{project}[/cyan]\n"
             f"Model:   [cyan]{display_model}[/cyan]\n"
             f"Config:  [dim]{CONFIG_PATH}[/dim]\n\n"
-            f"Run [green]yoak[/green] to start chatting with your cofounder.\n"
-            f"Web dashboard: [green]yoak serve[/green] → http://127.0.0.1:8420\n"
+            f"Run [green]yoak[/green] to start chatting — the web dashboard starts automatically.\n"
+            f"Web UI: [cyan]http://127.0.0.1:8420[/cyan]\n"
             f"Obsidian export: [green]yoak export --vault <path>[/green]",
             border_style="green",
         )
@@ -291,6 +290,60 @@ async def _confirm_startup(settings, agent) -> None:
         console.print(f"[green]Switched to {choice}.[/green]\n")
 
 
+# ── Web UI (background server) ────────────────────────────────────────
+
+def _server_responding(host: str, port: int) -> bool:
+    try:
+        import httpx
+
+        r = httpx.get(f"http://{host}:{port}/api/phase", timeout=1)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def _ensure_web_ui_running(settings) -> str | None:
+    """Start the dashboard in the background if it is not already running."""
+    host = settings.server.host
+    port = settings.server.port
+    url = f"http://{host}:{port}"
+
+    if _server_responding(host, port):
+        console.print(f"[dim]Web UI already running at {url}[/dim]")
+        return url
+
+    from yoak.api.dashboard_build import ensure_dashboard_built
+
+    try:
+        ensure_dashboard_built(log=console.print)
+    except SystemExit:
+        console.print(
+            "[yellow]Web UI skipped — install Node.js (https://nodejs.org/) "
+            "then run [green]yoak serve[/green]. CLI chat works normally.[/yellow]"
+        )
+        return None
+
+    import threading
+    import time
+
+    import uvicorn
+
+    from yoak.api.app import create_app
+
+    config = uvicorn.Config(create_app(), host=host, port=port, log_level="warning")
+    server = uvicorn.Server(config)
+    threading.Thread(target=server.run, daemon=True).start()
+
+    for _ in range(50):
+        if _server_responding(host, port):
+            console.print(f"[green]Web UI running at {url}[/green]")
+            return url
+        time.sleep(0.2)
+
+    console.print(f"[yellow]Web UI is still starting — try {url} in a moment.[/yellow]")
+    return url
+
+
 # ── Chat ──────────────────────────────────────────────────────────────
 
 @app.command()
@@ -310,6 +363,8 @@ async def _chat_loop():
     if not _check_model_ready(settings):
         return
 
+    web_url = _ensure_web_ui_running(settings)
+
     agent = Agent(settings)
     db = await agent.get_db()
 
@@ -326,7 +381,12 @@ async def _chat_loop():
             f"Startup: [cyan]{settings.project_name}[/cyan]\n"
             f"Model: [dim]{model_label}[/dim]\n"
             "Commands: /canvas  /workflow  /advance  /phase  /chatreset  /canvasreset  /reset  /quit\n"
-            "[dim]Web UI: yoak serve → http://127.0.0.1:8420  |  Export: yoak export --vault <path>[/dim]",
+            + (
+                f"[dim]Web UI: {web_url}[/dim]\n"
+                if web_url
+                else "[dim]Web UI: run yoak serve (needs Node.js)[/dim]\n"
+            )
+            + "[dim]Export: yoak export --vault <path>[/dim]",
             border_style="blue",
         )
     )
@@ -530,6 +590,16 @@ def _run_serve(host: str, port: int) -> None:
     settings = load_settings()
     if not _check_model_ready(settings):
         raise typer.Exit(1)
+
+    if _server_responding(host, port):
+        console.print(
+            Panel(
+                f"[bold]Yoak Server[/bold] — {settings.project_name}\n"
+                f"Already running at [cyan]http://{host}:{port}[/cyan]",
+                border_style="blue",
+            )
+        )
+        raise typer.Exit(0)
 
     ensure_dashboard_built(log=console.print)
 

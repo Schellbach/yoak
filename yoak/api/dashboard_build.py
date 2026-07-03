@@ -43,7 +43,7 @@ def ensure_dashboard_built(*, log) -> None:
         log(
             "[red bold]Web UI needs a one-time build[/red bold]\n\n"
             "Install [cyan]Node.js[/cyan] (includes npm): https://nodejs.org/\n"
-            "Then run: [green]make ui[/green]"
+            "Then run: [green]make serve[/green]"
         )
         raise SystemExit(1)
 

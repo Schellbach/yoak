@@ -38,9 +38,9 @@ make init                               # picks up the key, lets you switch
 ### Commands
 
 ```bash
-make                   # start chatting (installs everything on first run)
-make chat              # go straight to chat
-make serve             # start the web dashboard at http://127.0.0.1:8420
+make                   # start chatting (web UI starts in the background)
+make chat              # go straight to chat (web UI starts in the background)
+make serve             # start only the web dashboard (foreground)
 make canvas            # print your Lean Canvas
 make hypotheses        # list hypotheses
 make journal           # show your learning journal
@@ -49,7 +49,7 @@ make init              # reconfigure model, project name, etc.
 make help              # show all commands
 ```
 
-The first time you run `make serve`, Yoak builds the dashboard with npm (Node.js required once). After that it is automatic unless you change dashboard source files.
+The first time you run `make` or `make chat`, Yoak builds the dashboard with npm (Node.js required once) and starts it in the background at http://127.0.0.1:8420. Use `make serve` if you only want the web UI without terminal chat.
 
 ### Prerequisites
 
@@ -158,7 +158,7 @@ Memory context is injected into every conversation turn, so the agent always kno
 
 ### Dashboard (Web UI)
 
-Start with `make serve` or `yoak serve`. The war room runs at `http://127.0.0.1:8420` with six views:
+Start with `make`, `make chat`, or `yoak serve`. The war room runs at `http://127.0.0.1:8420` with six views:
 
 - **Overview** — Customer Development phase tracker, hypothesis stats (untested/testing/validated/invalidated), active workflow progress, recent activity
 - **Chat** — Streaming conversation with the cofounder agent, workflow phase indicator, suggested starter prompts
