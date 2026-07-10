@@ -1,15 +1,15 @@
 # Yoak — AI Cofounder Agent
 
-**Yoak is your AI cofounder agent** — the thing you talk to when you're searching for a repeatable business. It thinks like Paul Graham, operates like Steve Blank, and demands quality like Steve Jobs. It asks the hard questions, tracks what you've actually validated, and won't let you confuse hope for evidence.
+**Yoak is your AI cofounder agent** — the thing you talk to when you're searching for a repeatable business. Reinforced context including essays from Paul Graham, textbooks from Steve Blank, and curated interviews with Steve Jobs provide valuable founder level discussion about the most important parts of your startup. Yoak asks the hard questions, tracks what you've actually validated, and won't let you confuse hope for evidence.
 
 Yoak is **not a frontier model**. It's a **cofounder harness** around the model you choose (Ollama locally by default, or Claude/GPT/DeepSeek via API). The harness is what makes it Yoak:
 
 - **Persistent memory** — Lean Canvas, hypotheses, learning journal
 - **Structured workflows** — idea evaluation, customer discovery, validation, pivot decisions
-- **Encoded methodology** — PG instincts + Blank Customer Development + Jobs taste
+- **Encoded frameworks** — PG instincts + Blank Customer Development + Jobs taste
 - **Interfaces** — terminal chat, web dashboard, Obsidian export
 
-You interact with one agent named Yoak. Under the hood, an orchestrator assembles context from your startup's state, calls your configured LLM, and writes what you learn back to SQLite.
+You interact with Yoak, your cofounder agent. Under the hood, an orchestrator assembles context from your startup's state, calls your configured LLM, and writes what you learn back to SQLite.
 
 ### Yoak vs a chat wrapper
 
@@ -42,7 +42,7 @@ Copy and paste this into your terminal:
 git clone https://github.com/Schellbach/yoak.git && cd yoak && make
 ```
 
-That's it — one line. It clones the repo, installs everything, and drops you into a conversation with your cofounder agent. The web dashboard starts in the background. No API key needed. First run takes about a minute; every run after is instant.
+That's it, one line. It clones the repo, installs everything, and drops you into a conversation with your cofounder agent. The web dashboard starts in the background. No API key needed. First run takes about a minute; every run after is instant.
 
 ### Want to use a frontier model?
 
@@ -70,7 +70,8 @@ The first time you run `make` or `make chat`, Yoak builds the dashboard with npm
 ### Prerequisites
 
 - Python 3.10+
-- That's it. Ollama (free local AI) is offered during first-run setup. No accounts, no API keys.
+- Ollama (free local AI) is offered during first-run setup.
+- Web UI requires Node.js 18+
 
 ## Architecture
 
