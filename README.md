@@ -1,6 +1,6 @@
 # Yoak — AI Cofounder Agent
 
-**Yoak is your AI cofounder agent** — the one you talk to when you're searching for a repeatable business. Reinforced context including essays from Paul Graham, textbooks from Steve Blank, and curated interviews with Steve Jobs provide valuable founder level discussion about the most important parts of your startup. Yoak asks the hard questions, tracks what you've actually validated, and won't let you confuse hope for evidence.
+**Yoak is the harness for your AI cofounder agent** ⸻ the one you talk to when you're searching for a repeatable business. Reinforced context including essays from Paul Graham, textbooks from Steve Blank, and curated interviews with Steve Jobs provide valuable founder level discussion about the most important parts of your startup. Yoak asks the hard questions, tracks what you've actually validated, and won't let you confuse hope for evidence.
 
 Yoak is **not a frontier model**. It's a **cofounder harness** around the model you choose (Ollama locally by default, or Claude/GPT/DeepSeek via API). The harness is what makes it Yoak:
 
